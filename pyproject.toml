@@ -13,7 +13,7 @@ readme = "README.md"
 license = {text = "MIT license"}
 classifiers = []
 dependencies = [
-
+  "matplotlib>=3.7.1",
 ]
 
 [project.optional-dependencies]
