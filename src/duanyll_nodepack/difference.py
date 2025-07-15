@@ -24,7 +24,7 @@ class ImageDifferenceCmap:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("difference",)
     FUNCTION = "process"
-    CATEGORY = "Image Processing Utils" # You can change this category name
+    CATEGORY = "duanyll"
     
     def process(self, image1: torch.Tensor, image2: torch.Tensor, cmap: str):
         """
