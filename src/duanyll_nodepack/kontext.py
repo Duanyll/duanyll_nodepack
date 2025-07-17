@@ -62,6 +62,7 @@ class FluxKontextTrue3DPE:
     RETURN_NAMES = ("model",)
     FUNCTION = "patch"
     CATEGORY = "duanyll"
+    DESCRIPTION = "Patch Flux model to support true 3D positional encoding with Kontext. For currently released FLUX.1 Kontext dev model, this will cause it not working ideally with multiple context images. Use with caution."
     
     def patch(self, model):
         model_type_str = str(type(model.model.model_config).__name__)

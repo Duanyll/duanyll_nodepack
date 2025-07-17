@@ -25,6 +25,7 @@ class ImageDifferenceCmap:
     RETURN_NAMES = ("difference",)
     FUNCTION = "process"
     CATEGORY = "duanyll"
+    DESCRIPTION = "Calculate the difference between two images and apply a colormap to visualize the difference. Input images should have the same shape."
     
     def process(self, image1: torch.Tensor, image2: torch.Tensor, cmap: str):
         """

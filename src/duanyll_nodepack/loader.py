@@ -56,7 +56,9 @@ def load_checkpoint_from_hf(
         state_dicts = []
         for file in checkpoint_files:
             full_filename = os.path.join(os.path.dirname(checkpoint_file), file)
-            file_path = huggingface_hub.hf_hub_download(repo_id=repo_id, filename=full_filename)
+            file_path = huggingface_hub.hf_hub_download(
+                repo_id=repo_id, filename=full_filename
+            )
             state_dicts.append(comfy.utils.load_torch_file(file_path))
         # Merge all state dicts
         merged_state_dict = {}
@@ -84,22 +86,29 @@ def load_checkpoint_from_hf(
             return state_dict
 
 
+REPO_TOOLTIP = "The Hugging Face repository ID of the model."
+SUBFOLDER_TOOLTIP = "The subfolder in the repository where the model is located. Will look for the checkpoint file in this subfolder."
+FILENAME_TOOLTIP = "The name of the checkpoint file to load. If not specified, will try to find a suitable file in the subfolder. To specify sharded checkpoint files, enter the filename of the index file (e.g., 'model.index.json')."
+DESCRIPTION = "Downloads a model checkpoint from Hugging Face with `huggingface_hub` and loads it in native ComfyUI format. Will utilize global cache (`~/.cache/huggingface/hub` by default) to avoid re-downloading the same file multiple times."
+
+
 class HfCheckpointLoader:
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "repo_id": ("STRING", {"default": ""}),
+                "repo_id": ("STRING", {"default": "", "tooltip": REPO_TOOLTIP}),
             },
             "optional": {
-                "subfolder": ("STRING", {"default": ""}),
-                "filename": ("STRING", {"default": ""}),
+                "subfolder": ("STRING", {"default": "", "tooltip": SUBFOLDER_TOOLTIP}),
+                "filename": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
             },
         }
 
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/huggingface"
+    DESCRIPTION = DESCRIPTION
 
     def load_checkpoint(self, repo_id, subfolder, filename):
         if not repo_id:
@@ -127,22 +136,95 @@ class HfCheckpointLoader:
         return out[:3]
 
 
+class HfDiffusionModelLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "repo_id": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "weight_dtype": (
+                    ["default", "fp8_e4m3fn", "fp8_e4m3fn_fast", "fp8_e5m2"],
+                ),
+            },
+            "optional": {
+                "subfolder": (
+                    "STRING",
+                    {"default": "transformer", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "filename": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+            },
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "load_model"
+    CATEGORY = "duanyll/huggingface"
+    DESCRIPTION = DESCRIPTION
+
+    def load_model(self, repo_id, weight_dtype, subfolder, filename):
+        if not repo_id:
+            raise ValueError("Repository ID cannot be empty.")
+
+        if not subfolder:
+            subfolder = None
+
+        if not filename:
+            filename = None
+
+        model_options = {}
+        if weight_dtype == "fp8_e4m3fn":
+            model_options["dtype"] = torch.float8_e4m3fn
+        elif weight_dtype == "fp8_e4m3fn_fast":
+            model_options["dtype"] = torch.float8_e4m3fn
+            model_options["fp8_optimizations"] = True
+        elif weight_dtype == "fp8_e5m2":
+            model_options["dtype"] = torch.float8_e5m2
+
+        state_dict, metadata = load_checkpoint_from_hf(
+            repo_id, subfolder, filename, return_metadata=True
+        )
+
+        model = comfy.sd.load_diffusion_model_state_dict(
+            state_dict, model_options=model_options
+        )
+        if model is None:
+            raise ValueError(
+                "Failed to load the diffusion model from the provided checkpoint."
+            )
+        return (model,)
+
+
 class HfVaeLoader:
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "repo_id": ("STRING", {"default": ""}),
+                "repo_id": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
             },
             "optional": {
-                "subfolder": ("STRING", {"default": ""}),
-                "filename": ("STRING", {"default": ""}),
+                "subfolder": ("STRING", {"default": "", "tooltip": SUBFOLDER_TOOLTIP}),
+                "filename": (
+                    "STRING",
+                    {"default": "ae.safetensors", "tooltip": FILENAME_TOOLTIP},
+                ),
             },
         }
 
     RETURN_TYPES = ("VAE",)
     FUNCTION = "load_vae"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/huggingface"
+    DESCRIPTION = DESCRIPTION
 
     def load_vae(self, repo_id, subfolder, filename):
         if not repo_id:
@@ -177,7 +259,7 @@ class HfLoraLoader:
                     "CLIP",
                     {"tooltip": "The CLIP model the LoRA will be applied to."},
                 ),
-                "repo_id": ("STRING", {"default": ""}),
+                "repo_id": ("STRING", {"default": "", "tooltip": REPO_TOOLTIP}),
                 "strength_model": (
                     "FLOAT",
                     {
@@ -200,14 +282,15 @@ class HfLoraLoader:
                 ),
             },
             "optional": {
-                "subfolder": ("STRING", {"default": ""}),
-                "filename": ("STRING", {"default": ""}),
+                "subfolder": ("STRING", {"default": "", "tooltip": SUBFOLDER_TOOLTIP}),
+                "filename": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
             },
         }
 
     RETURN_TYPES = ("MODEL", "CLIP")
     FUNCTION = "load_lora"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/huggingface"
+    DESCRIPTION = DESCRIPTION
 
     def load_lora(
         self, model, clip, repo_id, strength_model, strength_clip, subfolder, filename
@@ -240,7 +323,7 @@ class HfLoraLoaderModelOnly:
                     "MODEL",
                     {"tooltip": "The diffusion model the LoRA will be applied to."},
                 ),
-                "repo_id": ("STRING", {"default": ""}),
+                "repo_id": ("STRING", {"default": "", "tooltip": REPO_TOOLTIP}),
                 "strength_model": (
                     "FLOAT",
                     {
@@ -253,14 +336,15 @@ class HfLoraLoaderModelOnly:
                 ),
             },
             "optional": {
-                "subfolder": ("STRING", {"default": ""}),
-                "filename": ("STRING", {"default": ""}),
+                "subfolder": ("STRING", {"default": "", "tooltip": SUBFOLDER_TOOLTIP}),
+                "filename": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
             },
         }
 
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_lora"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/huggingface"
+    DESCRIPTION = DESCRIPTION
 
     def load_lora(self, model, repo_id, strength_model, subfolder, filename):
         if not repo_id:
@@ -287,53 +371,83 @@ class HfDualClipLoader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "repo_id_1": ("STRING", {"default": ""}),
-                "repo_id_2": ("STRING", {"default": ""}),
-                "type": (["sdxl", "sd3", "flux", "hunyuan_video", "hidream"],),
+                "repo_id_1": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "repo_id_2": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "type": (
+                    ["sdxl", "sd3", "flux", "hunyuan_video", "hidream"],
+                    {"default": "flux"},
+                ),
             },
             "optional": {
-                "subfolder_1": ("STRING", {"default": ""}),
-                "subfolder_2": ("STRING", {"default": ""}),
-                "filename_1": ("STRING", {"default": ""}),
-                "filename_2": ("STRING", {"default": ""}),
+                "subfolder_1": (
+                    "STRING",
+                    {"default": "text_encoder", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "subfolder_2": (
+                    "STRING",
+                    {"default": "text_encoder_2", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "filename_1": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+                "filename_2": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
             },
         }
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/huggingface"
 
-    def load_clip(self, repo_id_1, repo_id_2, type, subfolder_1, subfolder_2, filename_1, filename_2):
+    def load_clip(
+        self,
+        repo_id_1,
+        repo_id_2,
+        type,
+        subfolder_1,
+        subfolder_2,
+        filename_1,
+        filename_2,
+    ):
         clip_type = getattr(
             comfy.sd.CLIPType, type.upper(), comfy.sd.CLIPType.STABLE_DIFFUSION
         )
 
         if not repo_id_1 or not repo_id_2:
             raise ValueError("Both repository IDs cannot be empty.")
-        
+
         if not subfolder_1:
             subfolder_1 = None
-        
+
         if not subfolder_2:
             subfolder_2 = None
-            
+
         if not filename_1:
             filename_1 = None
-            
+
         if not filename_2:
             filename_2 = None
-            
+
         state_dict_1, metadata_1 = load_checkpoint_from_hf(
             repo_id_1, subfolder_1, filename_1, return_metadata=True
         )
         state_dict_2, metadata_2 = load_checkpoint_from_hf(
             repo_id_2, subfolder_2, filename_2, return_metadata=True
         )
-        
+
         clip = comfy.sd.load_text_encoder_state_dicts(
             state_dicts=[state_dict_1, state_dict_2],
             embedding_directory=folder_paths.get_folder_paths("embeddings"),
             clip_type=clip_type,
         )
-        
+
         return (clip,)
