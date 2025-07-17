@@ -20,7 +20,7 @@ def get_checkpoint_file_from_hf(
     files = [
         f
         for f in huggingface_hub.list_repo_tree(repo_id, path_in_repo=subfolder)
-        if isinstance(f, huggingface_hub.hf_api.FileInfo)
+        if isinstance(f, huggingface_hub.hf_api.RepoFile)
     ]
 
     suffixes = [".index.json", ".safetensors", ".sft", ".bin", ".pt"]
@@ -55,8 +55,9 @@ def load_checkpoint_from_hf(
         checkpoint_files = set(index_data["weight_map"].values())
         state_dicts = []
         for file in checkpoint_files:
-            file_path = huggingface_hub.hf_hub_download(repo_id=repo_id, filename=file)
-            state_dicts.append(comfy.utils.load_state_dict(file_path))
+            full_filename = os.path.join(os.path.dirname(checkpoint_file), file)
+            file_path = huggingface_hub.hf_hub_download(repo_id=repo_id, filename=full_filename)
+            state_dicts.append(comfy.utils.load_torch_file(file_path))
         # Merge all state dicts
         merged_state_dict = {}
         for state_dict in state_dicts:
@@ -74,7 +75,7 @@ def load_checkpoint_from_hf(
         file_path = huggingface_hub.hf_hub_download(
             repo_id=repo_id, filename=checkpoint_file
         )
-        state_dict, metadata = comfy.utils.load_state_dict(
+        state_dict, metadata = comfy.utils.load_torch_file(
             file_path, return_metadata=True
         )
         if return_metadata:
@@ -114,7 +115,7 @@ class HfCheckpointLoader:
             repo_id, subfolder, filename, return_metadata=True
         )
 
-        out = comfy.sd.load_checkpoint_guess_config(
+        out = comfy.sd.load_state_dict_guess_config(
             state_dict,
             output_model=True,
             output_vae=True,
@@ -299,7 +300,7 @@ class HfDualClipLoader:
         }
 
     RETURN_TYPES = ("CLIP",)
-    FUNCTION = "load_dual_clip"
+    FUNCTION = "load_clip"
     CATEGORY = "duanyll"
 
     def load_clip(self, repo_id_1, repo_id_2, type, subfolder_1, subfolder_2, filename_1, filename_2):
