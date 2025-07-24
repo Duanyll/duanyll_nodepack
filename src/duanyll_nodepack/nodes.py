@@ -9,6 +9,7 @@ from .loader import (
     HfLoraLoaderModelOnly,
     HfVaeLoader,
 )
+from .marking import DrawBoundingBoxes
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -22,6 +23,7 @@ NODE_CLASS_MAPPINGS = {
     "HfLoraLoader": HfLoraLoader,
     "HfLoraLoaderModelOnly": HfLoraLoaderModelOnly,
     "HfVaeLoader": HfVaeLoader,
+    "DrawBoundingBoxes": DrawBoundingBoxes,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -35,4 +37,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "HfLoraLoader": "HuggingFace LoRA Loader",
     "HfLoraLoaderModelOnly": "HuggingFace LoRA Loader (Model Only)",
     "HfVaeLoader": "HuggingFace VAE Loader",
+    "DrawBoundingBoxes": "Draw Bounding Boxes",
 }
