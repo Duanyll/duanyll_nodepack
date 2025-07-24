@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import json
 
-class DrawBoundingBoxes:
+class DrawBoundingBoxesQwen:
     """
     一个ComfyUI节点，用于在图像上根据JSON输入绘制边界框和标签。
     新增功能：坐标裁剪、半透明填充模式。
@@ -38,7 +38,9 @@ class DrawBoundingBoxes:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "draw_on_image"
-    CATEGORY = "Image/Drawing"
+    CATEGORY = "duanyll"
+    
+    DESCRIPTION = "Draw bounding boxes and labels on images based on bbox_2d JSON data from Qwen2.5-VL."
 
     def _tensor_to_pil(self, tensor: torch.Tensor) -> Image.Image:
         image_np = tensor.cpu().numpy()
@@ -140,3 +142,85 @@ class DrawBoundingBoxes:
 
         output_image = torch.stack(processed_tensors)
         return (output_image,)
+    
+    
+class CreateBoundingBoxesMaskQwen:
+    """
+    一个ComfyUI节点，用于根据JSON数据创建一个黑白蒙版。
+    """
+    @classmethod
+    def INPUT_TYPES(cls):
+        """
+        定义节点的输入参数。
+        """
+        return {
+            "required": {
+                "json_string": ("STRING", {
+                    "multiline": True,
+                    "default": '[{"bbox_2d": [170, 10, 780, 830], "label": "face"}]'
+                }),
+                "width": ("INT", {
+                    "default": 512, "min": 64, "max": 8192, "step": 8, "display": "number"
+                }),
+                "height": ("INT", {
+                    "default": 512, "min": 64, "max": 8192, "step": 8, "display": "number"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "create_mask"
+    CATEGORY = "duanyll"
+    
+    DESCRIPTION = "Create a black and white mask from JSON bounding box data. The mask will be white in the areas defined by bbox_2d and black elsewhere."
+
+    def create_mask(self, json_string: str, width: int, height: int):
+        # 尝试解析JSON
+        try:
+            bbox_data = json.loads(json_string.strip())
+            if not isinstance(bbox_data, list):
+                print(f"Warning: [Create Mask from JSON] JSON data is not a list. Returning empty mask.")
+                bbox_data = []
+        except json.JSONDecodeError:
+            print(f"Warning: [Create Mask from JSON] Invalid JSON format. Returning empty mask.")
+            bbox_data = []
+        
+        # 创建一个全黑的蒙版（使用numpy数组，效率更高）
+        # 形状为 (height, width)，数据类型为32位浮点数
+        mask_np = np.zeros((height, width), dtype=np.float32)
+
+        # 遍历所有坐标框
+        for item in bbox_data:
+            if not isinstance(item, dict) or "bbox_2d" not in item:
+                continue
+
+            box = item["bbox_2d"]
+            if not isinstance(box, list) or len(box) != 4:
+                print(f"Warning: [Create Mask from JSON] Skipping invalid bbox_2d: {box}")
+                continue
+
+            x_min, y_min, x_max, y_max = box
+
+            # 裁剪坐标以确保它们在指定的 width 和 height 范围内
+            # 注意：numpy切片的上边界是“不包含”的，所以用 width/height 而不是 width-1/height-1
+            x_start = max(0, x_min)
+            y_start = max(0, y_min)
+            x_end = min(width, x_max)
+            y_end = min(height, y_max)
+            
+            # 如果区域无效，则跳过
+            if x_start >= x_end or y_start >= y_end:
+                continue
+            
+            # 使用numpy切片将指定区域设置为1.0（白色）
+            # 格式为 [y_start:y_end, x_start:x_end]
+            mask_np[y_start:y_end, x_start:x_end] = 1.0
+        
+        # 将numpy数组转换为PyTorch张量
+        mask_tensor = torch.from_numpy(mask_np)
+        
+        # ComfyUI的MASK格式要求是 (batch_size, height, width)
+        # 所以我们需要在最前面增加一个维度
+        mask_tensor = mask_tensor.unsqueeze(0)
+
+        return (mask_tensor, )
