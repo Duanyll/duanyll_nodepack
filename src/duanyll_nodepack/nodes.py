@@ -8,6 +8,8 @@ from .loader import (
     HfLoraLoader,
     HfLoraLoaderModelOnly,
     HfVaeLoader,
+    HfTripleClipLoader,
+    HfQuadrupleClipLoader,
 )
 from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 
@@ -23,6 +25,8 @@ NODE_CLASS_MAPPINGS = {
     "HfLoraLoader": HfLoraLoader,
     "HfLoraLoaderModelOnly": HfLoraLoaderModelOnly,
     "HfVaeLoader": HfVaeLoader,
+    "HfTripleClipLoader": HfTripleClipLoader,
+    "HfQuadrupleClipLoader": HfQuadrupleClipLoader,
     "DrawBoundingBoxesQwen": DrawBoundingBoxesQwen,
     "CreateBoundingBoxesMaskQwen": CreateBoundingBoxesMaskQwen,
 }
@@ -38,6 +42,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "HfLoraLoader": "HuggingFace LoRA Loader",
     "HfLoraLoaderModelOnly": "HuggingFace LoRA Loader (Model Only)",
     "HfVaeLoader": "HuggingFace VAE Loader",
+    "HfTripleClipLoader": "HuggingFace Triple CLIP Loader",
+    "HfQuadrupleClipLoader": "HuggingFace Quadruple CLIP Loader",
     "DrawBoundingBoxesQwen": "Draw Bounding Boxes (Qwen)",
     "CreateBoundingBoxesMaskQwen": "Create Bounding Boxes Mask (Qwen)",
 }

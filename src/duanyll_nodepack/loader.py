@@ -451,3 +451,229 @@ class HfDualClipLoader:
         )
 
         return (clip,)
+
+
+class HfTripleClipLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "repo_id_1": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "repo_id_2": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "repo_id_3": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                )
+            },
+            "optional": {
+                "subfolder_1": (
+                    "STRING",
+                    {"default": "text_encoder", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "subfolder_2": (
+                    "STRING",
+                    {"default": "text_encoder_2", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "subfolder_3": (
+                    "STRING",
+                    {"default": "text_encoder_3", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "filename_1": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+                "filename_2": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+                "filename_3": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+            },
+        }
+
+    RETURN_TYPES = ("CLIP",)
+    FUNCTION = "load_clip"
+    CATEGORY = "duanyll/huggingface"
+
+    def load_clip(
+        self,
+        repo_id_1,
+        repo_id_2,
+        repo_id_3,
+        subfolder_1,
+        subfolder_2,
+        subfolder_3,
+        filename_1,
+        filename_2,
+        filename_3,
+    ):
+        clip_type = getattr(
+            comfy.sd.CLIPType, type.upper(), comfy.sd.CLIPType.STABLE_DIFFUSION
+        )
+
+        if not repo_id_1 or not repo_id_2 or not repo_id_3:
+            raise ValueError("All three repository IDs cannot be empty.")
+        
+
+        if not subfolder_1:
+            subfolder_1 = None
+        if not subfolder_2:
+            subfolder_2 = None
+        if not subfolder_3:
+            subfolder_3 = None
+        
+        if not filename_1:
+            filename_1 = None
+        if not filename_2:
+            filename_2 = None
+        if not filename_3:
+            filename_3 = None
+
+        state_dict_1, metadata_1 = load_checkpoint_from_hf(
+            repo_id_1, subfolder_1, filename_1, return_metadata=True
+        )
+        state_dict_2, metadata_2 = load_checkpoint_from_hf(
+            repo_id_2, subfolder_2, filename_2, return_metadata=True
+        )
+        state_dict_3, metadata_3 = load_checkpoint_from_hf(
+            repo_id_3, subfolder_3, filename_3, return_metadata=True
+        )
+
+        clip = comfy.sd.load_text_encoder_state_dicts(
+            state_dicts=[state_dict_1, state_dict_2, state_dict_3],
+            embedding_directory=folder_paths.get_folder_paths("embeddings"),
+        )
+
+        return (clip,)
+    
+    
+class HfQuadrupleCLIPLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "repo_id_1": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "repo_id_2": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "repo_id_3": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                ),
+                "repo_id_4": (
+                    "STRING",
+                    {
+                        "default": "black-forest-labs/FLUX.1-dev",
+                        "tooltip": REPO_TOOLTIP,
+                    },
+                )
+            },
+            "optional": {
+                "subfolder_1": (
+                    "STRING",
+                    {"default": "text_encoder", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "subfolder_2": (
+                    "STRING",
+                    {"default": "text_encoder_2", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "subfolder_3": (
+                    "STRING",
+                    {"default": "text_encoder_3", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "subfolder_4": (
+                    "STRING",
+                    {"default": "text_encoder_4", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "filename_1": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+                "filename_2": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+                "filename_3": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+                "filename_4": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+            },
+        }
+
+    RETURN_TYPES = ("CLIP",)
+    FUNCTION = "load_clip"
+    CATEGORY = "duanyll/huggingface"
+
+    def load_clip(
+        self,
+        repo_id_1,
+        repo_id_2,
+        repo_id_3,
+        repo_id_4,
+        subfolder_1,
+        subfolder_2,
+        subfolder_3,
+        subfolder_4,
+        filename_1,
+        filename_2,
+        filename_3,
+        filename_4,
+    ):
+        clip_type = getattr(
+            comfy.sd.CLIPType, type.upper(), comfy.sd.CLIPType.STABLE_DIFFUSION
+        )
+
+        if not repo_id_1 or not repo_id_2 or not repo_id_3 or not repo_id_4:
+            raise ValueError("All three repository IDs cannot be empty.")
+        
+
+        if not subfolder_1:
+            subfolder_1 = None
+        if not subfolder_2:
+            subfolder_2 = None
+        if not subfolder_3:
+            subfolder_3 = None
+        if not subfolder_4:
+            subfolder_4 = None
+        
+        if not filename_1:
+            filename_1 = None
+        if not filename_2:
+            filename_2 = None
+        if not filename_3:
+            filename_3 = None
+        if not filename_4:
+            filename_4 = None
+
+        state_dict_1, metadata_1 = load_checkpoint_from_hf(
+            repo_id_1, subfolder_1, filename_1, return_metadata=True
+        )
+        state_dict_2, metadata_2 = load_checkpoint_from_hf(
+            repo_id_2, subfolder_2, filename_2, return_metadata=True
+        )
+        state_dict_3, metadata_3 = load_checkpoint_from_hf(
+            repo_id_3, subfolder_3, filename_3, return_metadata=True
+        )
+        state_dict_4, metadata_4 = load_checkpoint_from_hf(
+            repo_id_4, subfolder_4, filename_4, return_metadata=True
+        )
+
+        clip = comfy.sd.load_text_encoder_state_dicts(
+            state_dicts=[state_dict_1, state_dict_2, state_dict_3, state_dict_4],
+            embedding_directory=folder_paths.get_folder_paths("embeddings"),
+        )
+
+        return (clip,)
