@@ -555,7 +555,7 @@ class HfTripleClipLoader:
         return (clip,)
     
     
-class HfQuadrupleCLIPLoader:
+class HfQuadrupleClipLoader:
     @classmethod
     def INPUT_TYPES(s):
         return {
