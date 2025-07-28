@@ -14,5 +14,3 @@ from .src.duanyll_nodepack.nodes import NODE_CLASS_MAPPINGS
 from .src.duanyll_nodepack.nodes import NODE_DISPLAY_NAME_MAPPINGS
 
 WEB_DIRECTORY = "./web"
-
-import diffusers
