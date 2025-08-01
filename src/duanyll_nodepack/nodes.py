@@ -13,6 +13,7 @@ from .loader import (
 )
 from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .fluxtext import FluxTextLoraLoader
+from .morphology import CoverWordsWithRectangles, AdvancedMorphology
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -31,6 +32,8 @@ NODE_CLASS_MAPPINGS = {
     "DrawBoundingBoxesQwen": DrawBoundingBoxesQwen,
     "CreateBoundingBoxesMaskQwen": CreateBoundingBoxesMaskQwen,
     "FluxTextLoraLoader": FluxTextLoraLoader,
+    "CoverWordsWithRectangles": CoverWordsWithRectangles,
+    "AdvancedMorphology": AdvancedMorphology,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -49,4 +52,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DrawBoundingBoxesQwen": "Draw Bounding Boxes (Qwen)",
     "CreateBoundingBoxesMaskQwen": "Create Bounding Boxes Mask (Qwen)",
     "FluxTextLoraLoader": "Flux Text LoRA Loader",
+    "CoverWordsWithRectangles": "Cover Words with Rectangles",
+    "AdvancedMorphology": "Advanced Morphology",
 }

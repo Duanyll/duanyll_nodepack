@@ -13,9 +13,11 @@ readme = "README.md"
 license = {text = "MIT license"}
 classifiers = []
 dependencies = [
-  "matplotlib>=3.7.1",
+  "matplotlib",
   "huggingface-hub",
-  "safetensors"
+  "safetensors",
+  "opencv-python-headless",
+  "kornia"
 ]
 
 [project.optional-dependencies]
