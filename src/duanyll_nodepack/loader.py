@@ -138,7 +138,8 @@ def load_checkpoint_from_local(
         return (state_dict, metadata) if return_metadata else state_dict
 
 def load_checkpoint_from_hf_or_local(
-    repo_id: str, subfolder: str = None, filename: str = None):
+    repo_id: str, subfolder: str = None, filename: str = None, return_metadata=False
+):
 
     # Determine if repo_id is a local path or HF repo
     is_local = repo_id.startswith("./") or os.path.isabs(repo_id)
@@ -151,11 +152,11 @@ def load_checkpoint_from_hf_or_local(
             base_path = repo_id
         
         return load_checkpoint_from_local(
-            base_path, subfolder, filename, return_metadata=True
+            base_path, subfolder, filename, return_metadata=return_metadata
         )
     else:
         return load_checkpoint_from_hf(
-            repo_id, subfolder, filename, return_metadata=True
+            repo_id, subfolder, filename, return_metadata=return_metadata
         )
 
 REPO_TOOLTIP = "The Hugging Face repo ID, an absolute path (/path/to/model), or a relative path (./models/...) from the ComfyUI root."
