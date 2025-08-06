@@ -4,6 +4,7 @@ from .kontext import FluxKontextTrue3DPE
 from .loader import (
     HfCheckpointLoader,
     HfDiffusionModelLoader,
+    HfClipLoader,
     HfDualClipLoader,
     HfLoraLoader,
     HfLoraLoaderModelOnly,
@@ -24,6 +25,7 @@ NODE_CLASS_MAPPINGS = {
     "FluxKontextTrue3DPE": FluxKontextTrue3DPE,
     "HfCheckpointLoader": HfCheckpointLoader,
     "HfDiffusionModelLoader": HfDiffusionModelLoader,
+    "HfClipLoader": HfClipLoader,
     "HfDualClipLoader": HfDualClipLoader,
     "HfLoraLoader": HfLoraLoader,
     "HfLoraLoaderModelOnly": HfLoraLoaderModelOnly,
@@ -46,6 +48,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FluxKontextTrue3DPE": "Patch Flux Kontext True 3D PE",
     "HfCheckpointLoader": "HuggingFace Checkpoint Loader",
     "HfDiffusionModelLoader": "HuggingFace Diffusion Model Loader",
+    "HfClipLoader": "HuggingFace CLIP Loader",
     "HfDualClipLoader": "HuggingFace Dual CLIP Loader",
     "HfLoraLoader": "HuggingFace LoRA Loader",
     "HfLoraLoaderModelOnly": "HuggingFace LoRA Loader (Model Only)",
