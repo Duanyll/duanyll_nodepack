@@ -147,7 +147,7 @@ def load_checkpoint_from_hf_or_local(
     if is_local:
         # Resolve relative path from ComfyUI root
         if repo_id.startswith("./"):
-            base_path = os.path.abspath(os.path.join(folder_paths.get_base_path(), repo_id))
+            base_path = os.path.abspath(os.path.join(folder_paths.base_path, repo_id))
         else:
             base_path = repo_id
         
