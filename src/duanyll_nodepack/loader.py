@@ -1,3 +1,4 @@
+import os
 import os.path
 import json
 import torch
@@ -11,6 +12,7 @@ import folder_paths
 def get_checkpoint_file_from_hf(
     repo_id: str, subfolder: str = None, filename: str = None
 ) -> str:
+    """Finds the correct checkpoint file from a Hugging Face repository."""
     if subfolder is None:
         subfolder = ""
     if filename is not None:
@@ -39,57 +41,127 @@ def get_checkpoint_file_from_hf(
     )
 
 
+def get_checkpoint_file_from_local(
+    base_path: str, subfolder: str = None, filename: str = None
+) -> str:
+    """Finds the correct checkpoint file from a local filesystem path."""
+    search_path = base_path
+    if subfolder:
+        search_path = os.path.join(base_path, subfolder)
+
+    if not os.path.isdir(search_path):
+        raise FileNotFoundError(f"Directory not found: {search_path}")
+
+    if filename is not None:
+        return os.path.join(search_path, filename)
+
+    files = os.listdir(search_path)
+    suffixes = [".index.json", ".safetensors", ".sft", ".bin", ".pt"]
+
+    for suffix in suffixes:
+        matching_files = [f for f in files if f.endswith(suffix)]
+        if len(matching_files) > 1:
+            raise ValueError(
+                f"Multiple files found with suffix '{suffix}' in local directory '{search_path}'. Please specify a filename."
+            )
+        elif len(matching_files) == 1:
+            return os.path.join(search_path, matching_files[0])
+
+    raise ValueError(
+        f"No files found with the expected suffixes in local directory '{search_path}'. Please specify a filename."
+    )
+
+
 def load_checkpoint_from_hf(
     repo_id: str, subfolder: str = None, filename: str = None, return_metadata=False
 ):
+    """Loads a checkpoint from Hugging Face, handling sharded and single files."""
     checkpoint_file = get_checkpoint_file_from_hf(repo_id, subfolder, filename)
 
     if checkpoint_file.endswith(".index.json"):
-        # Load the index file to get the actual checkpoint file
+        # Download and load the index file to find all checkpoint shards
         index_path = huggingface_hub.hf_hub_download(
             repo_id=repo_id, filename=checkpoint_file
         )
         with open(index_path, "r") as f:
             index_data = json.load(f)
-        # Actual checkpoint files are unique values in 'weight_map'
+        
+        # Download and load each shard
         checkpoint_files = set(index_data["weight_map"].values())
-        state_dicts = []
+        merged_state_dict = {}
         for file in checkpoint_files:
             full_filename = os.path.join(os.path.dirname(checkpoint_file), file)
             file_path = huggingface_hub.hf_hub_download(
                 repo_id=repo_id, filename=full_filename
             )
-            state_dicts.append(comfy.utils.load_torch_file(file_path))
-        # Merge all state dicts
-        merged_state_dict = {}
-        for state_dict in state_dicts:
-            for key, value in state_dict.items():
-                if key in merged_state_dict:
-                    merged_state_dict[key] += value
-                else:
-                    merged_state_dict[key] = value
-        if return_metadata:
-            return merged_state_dict, None
-        else:
-            return merged_state_dict
+            state_dict = comfy.utils.load_torch_file(file_path)
+            merged_state_dict.update(state_dict) # Use update for correct merging
+        
+        return (merged_state_dict, None) if return_metadata else merged_state_dict
     else:
-        # Directly load the checkpoint file
+        # Directly download and load the single checkpoint file
         file_path = huggingface_hub.hf_hub_download(
             repo_id=repo_id, filename=checkpoint_file
         )
         state_dict, metadata = comfy.utils.load_torch_file(
             file_path, return_metadata=True
         )
-        if return_metadata:
-            return state_dict, metadata
+        return (state_dict, metadata) if return_metadata else state_dict
+
+
+def load_checkpoint_from_local(
+    base_path: str, subfolder: str = None, filename: str = None, return_metadata=False
+):
+    """Loads a checkpoint from the local filesystem, handling sharded and single files."""
+    checkpoint_path = get_checkpoint_file_from_local(base_path, subfolder, filename)
+
+    if checkpoint_path.endswith(".index.json"):
+        # Load the index file to find all checkpoint shards
+        with open(checkpoint_path, "r") as f:
+            index_data = json.load(f)
+
+        # Load each shard from the local filesystem
+        checkpoint_files = set(index_data["weight_map"].values())
+        merged_state_dict = {}
+        index_dir = os.path.dirname(checkpoint_path)
+        for file in checkpoint_files:
+            shard_path = os.path.join(index_dir, file)
+            state_dict = comfy.utils.load_torch_file(shard_path)
+            merged_state_dict.update(state_dict) # Use update for correct merging
+        
+        return (merged_state_dict, None) if return_metadata else merged_state_dict
+    else:
+        # Directly load the single checkpoint file
+        state_dict, metadata = comfy.utils.load_torch_file(
+            checkpoint_path, return_metadata=True
+        )
+        return (state_dict, metadata) if return_metadata else state_dict
+
+def load_checkpoint_from_hf_or_local(
+    repo_id: str, subfolder: str = None, filename: str = None):
+
+    # Determine if repo_id is a local path or HF repo
+    is_local = repo_id.startswith("./") or os.path.isabs(repo_id)
+
+    if is_local:
+        # Resolve relative path from ComfyUI root
+        if repo_id.startswith("./"):
+            base_path = os.path.abspath(os.path.join(folder_paths.get_base_path(), repo_id))
         else:
-            return state_dict
+            base_path = repo_id
+        
+        return load_checkpoint_from_local(
+            base_path, subfolder, filename, return_metadata=True
+        )
+    else:
+        return load_checkpoint_from_hf(
+            repo_id, subfolder, filename, return_metadata=True
+        )
 
-
-REPO_TOOLTIP = "The Hugging Face repository ID of the model."
-SUBFOLDER_TOOLTIP = "The subfolder in the repository where the model is located. Will look for the checkpoint file in this subfolder."
-FILENAME_TOOLTIP = "The name of the checkpoint file to load. If not specified, will try to find a suitable file in the subfolder. To specify sharded checkpoint files, enter the filename of the index file (e.g., 'model.index.json')."
-DESCRIPTION = "Downloads a model checkpoint from Hugging Face with `huggingface_hub` and loads it in native ComfyUI format. Will utilize global cache (`~/.cache/huggingface/hub` by default) to avoid re-downloading the same file multiple times."
+REPO_TOOLTIP = "The Hugging Face repo ID, an absolute path (/path/to/model), or a relative path (./models/...) from the ComfyUI root."
+SUBFOLDER_TOOLTIP = "The subfolder where the model is located. Applies to both Hugging Face repos and local paths."
+FILENAME_TOOLTIP = "The checkpoint file to load. If not specified, will auto-detect. For sharded checkpoints, use the index file (e.g., 'model.index.json')."
+DESCRIPTION = "Downloads a model from Hugging Face or loads it from a local path. Supports single-file and sharded checkpoints."
 
 
 class HfCheckpointLoader:
@@ -120,7 +192,7 @@ class HfCheckpointLoader:
         if not filename:
             filename = None
 
-        state_dict, metadata = load_checkpoint_from_hf(
+        state_dict, metadata = load_checkpoint_from_hf_or_local(
             repo_id, subfolder, filename, return_metadata=True
         )
 
@@ -185,7 +257,7 @@ class HfDiffusionModelLoader:
         elif weight_dtype == "fp8_e5m2":
             model_options["dtype"] = torch.float8_e5m2
 
-        state_dict, metadata = load_checkpoint_from_hf(
+        state_dict, metadata = load_checkpoint_from_hf_or_local(
             repo_id, subfolder, filename, return_metadata=True
         )
 
@@ -236,7 +308,7 @@ class HfVaeLoader:
         if not filename:
             filename = None
 
-        state_dict, metadata = load_checkpoint_from_hf(
+        state_dict, metadata = load_checkpoint_from_hf_or_local(
             repo_id, subfolder, filename, return_metadata=True
         )
 
@@ -244,6 +316,55 @@ class HfVaeLoader:
         vae.throw_exception_if_invalid()
 
         return (vae,)
+
+
+class HfClipLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "repo_id": ("STRING", ),
+                "type": ("STRING", ),
+            },
+            "optional": {
+                "subfolder": (
+                    "STRING",
+                    {"default": "text_encoder", "tooltip": SUBFOLDER_TOOLTIP},
+                ),
+                "filename": ("STRING", {"default": "", "tooltip": FILENAME_TOOLTIP}),
+            },
+        }
+
+    RETURN_TYPES = ("CLIP",)
+    FUNCTION = "load_clip"
+    CATEGORY = "duanyll/huggingface"
+
+    DESCRIPTION = DESCRIPTION
+
+    def load_clip(self, repo_id, type, subfolder, filename):
+        clip_type = getattr(
+            comfy.sd.CLIPType, type.upper(), comfy.sd.CLIPType.STABLE_DIFFUSION
+        )
+
+        if not repo_id:
+            raise ValueError("Repository ID cannot be empty.")
+
+        if not subfolder:
+            subfolder = None
+
+        if not filename:
+            filename = None
+
+        state_dict, metadata = load_checkpoint_from_hf_or_local(
+            repo_id, subfolder, filename, return_metadata=True
+        )
+
+        clip = comfy.sd.load_text_encoder_state_dicts(
+            state_dicts=[state_dict],
+            embedding_directory=folder_paths.get_folder_paths("embeddings"),
+            clip_type=clip_type,
+        )
+        return (clip,)
 
 
 class HfLoraLoader:
@@ -304,7 +425,7 @@ class HfLoraLoader:
         if not filename:
             filename = None
 
-        state_dict, metadata = load_checkpoint_from_hf(
+        state_dict, metadata = load_checkpoint_from_hf_or_local(
             repo_id, subfolder, filename, return_metadata=True
         )
 
@@ -356,7 +477,7 @@ class HfLoraLoaderModelOnly:
         if not filename:
             filename = None
 
-        state_dict, metadata = load_checkpoint_from_hf(
+        state_dict, metadata = load_checkpoint_from_hf_or_local(
             repo_id, subfolder, filename, return_metadata=True
         )
 
@@ -437,10 +558,10 @@ class HfDualClipLoader:
         if not filename_2:
             filename_2 = None
 
-        state_dict_1, metadata_1 = load_checkpoint_from_hf(
+        state_dict_1, metadata_1 = load_checkpoint_from_hf_or_local(
             repo_id_1, subfolder_1, filename_1, return_metadata=True
         )
-        state_dict_2, metadata_2 = load_checkpoint_from_hf(
+        state_dict_2, metadata_2 = load_checkpoint_from_hf_or_local(
             repo_id_2, subfolder_2, filename_2, return_metadata=True
         )
 
@@ -537,13 +658,13 @@ class HfTripleClipLoader:
         if not filename_3:
             filename_3 = None
 
-        state_dict_1, metadata_1 = load_checkpoint_from_hf(
+        state_dict_1, metadata_1 = load_checkpoint_from_hf_or_local(
             repo_id_1, subfolder_1, filename_1, return_metadata=True
         )
-        state_dict_2, metadata_2 = load_checkpoint_from_hf(
+        state_dict_2, metadata_2 = load_checkpoint_from_hf_or_local(
             repo_id_2, subfolder_2, filename_2, return_metadata=True
         )
-        state_dict_3, metadata_3 = load_checkpoint_from_hf(
+        state_dict_3, metadata_3 = load_checkpoint_from_hf_or_local(
             repo_id_3, subfolder_3, filename_3, return_metadata=True
         )
 
@@ -658,16 +779,16 @@ class HfQuadrupleClipLoader:
         if not filename_4:
             filename_4 = None
 
-        state_dict_1, metadata_1 = load_checkpoint_from_hf(
+        state_dict_1, metadata_1 = load_checkpoint_from_hf_or_local(
             repo_id_1, subfolder_1, filename_1, return_metadata=True
         )
-        state_dict_2, metadata_2 = load_checkpoint_from_hf(
+        state_dict_2, metadata_2 = load_checkpoint_from_hf_or_local(
             repo_id_2, subfolder_2, filename_2, return_metadata=True
         )
-        state_dict_3, metadata_3 = load_checkpoint_from_hf(
+        state_dict_3, metadata_3 = load_checkpoint_from_hf_or_local(
             repo_id_3, subfolder_3, filename_3, return_metadata=True
         )
-        state_dict_4, metadata_4 = load_checkpoint_from_hf(
+        state_dict_4, metadata_4 = load_checkpoint_from_hf_or_local(
             repo_id_4, subfolder_4, filename_4, return_metadata=True
         )
 
