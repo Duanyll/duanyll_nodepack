@@ -3,3 +3,4 @@ huggingface-hub
 safetensors
 opencv-python-headless
 kornia
+insightface

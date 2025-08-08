@@ -16,6 +16,7 @@ from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .fluxtext import FluxTextLoraLoader
 from .morphology import CoverWordsWithRectangles, AdvancedMorphology
 from .resize import ImagePadToResolution, ImageCropFromPadded
+from .face import InsightFaceSimilarity
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -39,6 +40,7 @@ NODE_CLASS_MAPPINGS = {
     "AdvancedMorphology": AdvancedMorphology,
     "ImagePadToResolution": ImagePadToResolution,
     "ImageCropFromPadded": ImageCropFromPadded,
+    "InsightFaceSimilarity": InsightFaceSimilarity,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -62,4 +64,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AdvancedMorphology": "Advanced Morphology",
     "ImagePadToResolution": "Pad to Resolution",
     "ImageCropFromPadded": "Crop from Padded",
+    "InsightFaceSimilarity": "InsightFace Similarity",
 }
