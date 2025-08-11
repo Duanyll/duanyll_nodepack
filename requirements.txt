@@ -4,3 +4,4 @@ safetensors
 opencv-python-headless
 kornia
 insightface
+volcengine-python-sdk[ark]

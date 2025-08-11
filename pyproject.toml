@@ -18,7 +18,8 @@ dependencies = [
   "safetensors",
   "opencv-python-headless",
   "kornia",
-  "insightface"
+  "insightface",
+  "volcengine-python-sdk[ark]"
 ]
 
 [project.optional-dependencies]
