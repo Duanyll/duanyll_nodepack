@@ -12,6 +12,14 @@ from .loader import (
     HfTripleClipLoader,
     HfQuadrupleClipLoader,
 )
+from .bbox import (
+    ParseBBoxQwenVL,
+    DrawBBox,
+    DrawBBoxMask,
+    ExpandBBoxByRatio,
+    BBoxCrop,
+    BBoxImageStitcher
+)
 from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .fluxtext import FluxTextLoraLoader
 from .morphology import CoverWordsWithRectangles, AdvancedMorphology
@@ -34,6 +42,12 @@ NODE_CLASS_MAPPINGS = {
     "HfVaeLoader": HfVaeLoader,
     "HfTripleClipLoader": HfTripleClipLoader,
     "HfQuadrupleClipLoader": HfQuadrupleClipLoader,
+    "ParseBBoxQwenVL": ParseBBoxQwenVL,
+    "DrawBBox": DrawBBox,
+    "DrawBBoxMask": DrawBBoxMask,
+    "ExpandBBoxByRatio": ExpandBBoxByRatio,
+    "BBoxCrop": BBoxCrop,
+    "BBoxImageStitcher": BBoxImageStitcher,
     "DrawBoundingBoxesQwen": DrawBoundingBoxesQwen,
     "CreateBoundingBoxesMaskQwen": CreateBoundingBoxesMaskQwen,
     "FluxTextLoraLoader": FluxTextLoraLoader,
@@ -60,8 +74,14 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "HfVaeLoader": "HuggingFace VAE Loader",
     "HfTripleClipLoader": "HuggingFace Triple CLIP Loader",
     "HfQuadrupleClipLoader": "HuggingFace Quadruple CLIP Loader",
-    "DrawBoundingBoxesQwen": "Draw Bounding Boxes (Qwen)",
-    "CreateBoundingBoxesMaskQwen": "Create Bounding Boxes Mask (Qwen)",
+    "ParseBBoxQwenVL": "Parse BBox QwenVL",
+    "DrawBBox": "Draw Bounding Boxes",
+    "DrawBBoxMask": "Draw Bounding Box Mask",
+    "ExpandBBoxByRatio": "Expand Bounding Box by Ratio",
+    "BBoxCrop": "Bounding Box Crop",
+    "BBoxImageStitcher": "Bounding Box Image Stitcher",
+    "DrawBoundingBoxesQwen": "[DEPR] Draw Bounding Boxes Qwen",
+    "CreateBoundingBoxesMaskQwen": "[DEPR] Create Bounding Boxes Mask Qwen",
     "FluxTextLoraLoader": "Flux Text LoRA Loader",
     "CoverWordsWithRectangles": "Cover Words with Rectangles",
     "AdvancedMorphology": "Advanced Morphology",
