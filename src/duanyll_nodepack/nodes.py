@@ -18,7 +18,7 @@ from .bbox import (
     DrawBBoxMask,
     ExpandBBoxByRatio,
     BBoxCrop,
-    BBoxImageStitcher
+    BBoxImageStitcher,
 )
 from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .models.fluxtext import FluxTextLoraLoader
@@ -27,7 +27,14 @@ from .image.resize import ImagePadToResolution, ImageCropFromPadded
 from .face import InsightFaceSimilarity
 from .ark import CreateArkClient, SeedEditNode
 from .data.any import AsAny
-from .data.json import ParseLlmJsonOutput, JsonPathQuery, JsonPathQuerySingle, JsonPathUpdate
+from .data.json import (
+    ParseLlmJsonOutput,
+    JsonPathQuery,
+    JsonPathQuerySingle,
+    JsonPathUpdate,
+    ParseJson5,
+    DumpJson,
+)
 from .loaders.basic import DownloadImageFromUrl, ReadTextFile
 
 # A dictionary that contains all nodes you want to export with their names
@@ -67,7 +74,9 @@ NODE_CLASS_MAPPINGS = {
     "JsonPathQuerySingle": JsonPathQuerySingle,
     "JsonPathUpdate": JsonPathUpdate,
     "DownloadImageFromUrl": DownloadImageFromUrl,
-    "ReadTextFile": ReadTextFile
+    "ReadTextFile": ReadTextFile,
+    "ParseJson5": ParseJson5,
+    "DumpJson": DumpJson
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -106,5 +115,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "JsonPathQuerySingle": "JSON Path Query Single",
     "JsonPathUpdate": "JSON Path Update",
     "DownloadImageFromUrl": "Download Image from URL",
-    "ReadTextFile": "Read Text File"
+    "ReadTextFile": "Read Text File",
+    "ParseJson5": "Parse JSON5",
+    "DumpJson": "Dump JSON",
 }

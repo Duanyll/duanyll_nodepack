@@ -199,3 +199,96 @@ class JsonPathUpdate:
         data_copy = copy.deepcopy(json_data)
         expr.update(data_copy, value)
         return (data_copy,)
+    
+    
+class ParseJson5:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "json_string": ("STRING", {"default": "", "multiline": True}),
+            }
+        }
+
+    RETURN_TYPES = (AnyType("*"),)
+    FUNCTION = "run"
+    CATEGORY = "duanyll/data"
+
+    def run(self, json_string):
+        obj = json5.loads(json_string)
+        return (obj,)
+    
+
+def json_dump_with_max_depth(obj, max_depth=3, indent=4):
+    """
+    自定义的 JSON 序列化函数，可以控制最大缩进深度。
+
+    :param obj: 需要序列化的 Python 对象。
+    :param max_depth: 需要格式化缩进的最大深度。
+    :param indent: 缩进的空格数。
+    :return: 格式化后的 JSON 字符串。
+    """
+
+    def format_recursive(current_obj, current_depth):
+        # 如果当前对象不是字典或列表，或者深度已达到上限
+        if not isinstance(current_obj, (dict, list)) or current_depth >= max_depth:
+            # 直接使用内置的 json.dumps 进行紧凑格式化
+            return json.dumps(current_obj, ensure_ascii=False)
+
+        # 计算当前层级的缩进
+        current_indent = " " * indent * current_depth
+        # 下一层级的缩进
+        next_indent = " " * indent * (current_depth + 1)
+
+        if isinstance(current_obj, dict):
+            if not current_obj:
+                return "{}"
+
+            items = []
+            for key, value in current_obj.items():
+                # 格式化键 (总是字符串)
+                key_str = json.dumps(key, ensure_ascii=False)
+                # 递归格式化值
+                value_str = format_recursive(value, current_depth + 1)
+                items.append(f"{next_indent}{key_str}: {value_str}")
+
+            return f"{{\n" + ",\n".join(items) + f"\n{current_indent}}}"
+
+        elif isinstance(current_obj, list):
+            if not current_obj:
+                return "[]"
+
+            items = []
+            for item in current_obj:
+                # 递归格式化列表项
+                item_str = format_recursive(item, current_depth + 1)
+                items.append(f"{next_indent}{item_str}")
+
+            return f"[\n" + ",\n".join(items) + f"\n{current_indent}]"
+
+    return format_recursive(obj, 0)
+    
+    
+class DumpJson:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "json_object": (AnyType("*"),),
+            },
+            "optional": {
+                "indent": ("INTEGER", {"default": 2, "min": 0, "max": 8}),
+                "max_depth": ("INTEGER", {"default": 0, "min": 0, "max": 8})
+            }
+        }
+
+    RETURN_TYPES = (AnyType("*"),)
+    FUNCTION = "run"
+    CATEGORY = "duanyll/data"
+
+    def run(self, json_object, indent=2, max_depth=0):
+        if max_depth > 0:
+            json_string = json_dump_with_max_depth(json_object, max_depth=max_depth, indent=indent)
+        else:
+            json_string = json.dumps(json_object, indent=2)
+        return (json_string,)
