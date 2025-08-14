@@ -62,7 +62,7 @@ class DrawBoundingBoxesQwen:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "draw_on_image"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/deprecated"
     
     # ### 改进点: 更新描述 ###
     DESCRIPTION = "Draw bounding boxes, points, and labels on images from JSON data (e.g., Qwen-VL)."
@@ -237,7 +237,7 @@ class CreateBoundingBoxesMaskQwen:
 
     RETURN_TYPES = ("MASK",)
     FUNCTION = "create_mask"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/deprecated"
     
     DESCRIPTION = "Create a black and white mask from JSON bounding box data. The mask will be white in the areas defined by bbox_2d and black elsewhere."
 

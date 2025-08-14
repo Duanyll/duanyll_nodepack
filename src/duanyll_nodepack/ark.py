@@ -81,7 +81,7 @@ class CreateArkClient:
 
     RETURN_TYPES = ("ARK_CLIENT",)
     FUNCTION = "create_client"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/ark"
 
     def create_client(self, base_url: str, api_key: str):
         """
@@ -152,7 +152,7 @@ class SeedEditNode:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "generate_image"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/ark"
 
     def generate_image(
         self,

@@ -31,7 +31,7 @@ class CoverWordsWithRectangles:
 
     RETURN_TYPES = ("MASK",)
     FUNCTION = "cover_words"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/morphology"
 
     def tensor_to_cv2_img(self, tensor):
         """将单张 MASK 张量转换为 OpenCV 图像 (np.ndarray)"""
@@ -143,7 +143,7 @@ class AdvancedMorphology:
     FUNCTION = "process"
 
     # The category for the node in the ComfyUI menu
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/deprecated"
 
     def process(self, mask: torch.Tensor, method: str, sigma: float, threshold: float, auto_kernel_size: bool, kernel_size: int):
         

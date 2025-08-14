@@ -104,7 +104,7 @@ class PhotoDoddleConditioning:
     RETURN_TYPES = ("MODEL", "CONDITIONING", "CONDITIONING", "LATENT")
     RETURN_NAMES = ("model", "positive", "negative", "latent")
     FUNCTION = "encode"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/models"
 
     def encode(self, model, positive, negative, pixels, vae):
         model_type_str = str(type(model.model.model_config).__name__)

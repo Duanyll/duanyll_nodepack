@@ -475,7 +475,7 @@ class FluxTextLoraLoader:
 
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_lora"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/models"
 
     def load_lora(self, model: ModelPatcher, lora_name: str, strength_model: float):
         model_type_str = str(type(model.model.model_config).__name__)

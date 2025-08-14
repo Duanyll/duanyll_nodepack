@@ -1,7 +1,7 @@
-from .photododdle import PhotoDoddleConditioning
-from .difference import ImageDifferenceCmap
-from .kontext import FluxKontextTrue3DPE
-from .loader import (
+from .models.photododdle import PhotoDoddleConditioning
+from .image.difference import ImageDifferenceCmap
+from .models.kontext import FluxKontextTrue3DPE
+from .loaders import (
     HfCheckpointLoader,
     HfDiffusionModelLoader,
     HfClipLoader,
@@ -21,9 +21,9 @@ from .bbox import (
     BBoxImageStitcher
 )
 from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
-from .fluxtext import FluxTextLoraLoader
+from .models.fluxtext import FluxTextLoraLoader
 from .morphology import CoverWordsWithRectangles, AdvancedMorphology
-from .resize import ImagePadToResolution, ImageCropFromPadded
+from .image.resize import ImagePadToResolution, ImageCropFromPadded
 from .face import InsightFaceSimilarity
 from .ark import CreateArkClient, SeedEditNode
 
@@ -84,7 +84,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CreateBoundingBoxesMaskQwen": "[DEPR] Create Bounding Boxes Mask Qwen",
     "FluxTextLoraLoader": "Flux Text LoRA Loader",
     "CoverWordsWithRectangles": "Cover Words with Rectangles",
-    "AdvancedMorphology": "Advanced Morphology",
+    "AdvancedMorphology": "[DEPR] Advanced Morphology",
     "ImagePadToResolution": "Pad to Resolution",
     "ImageCropFromPadded": "Crop from Padded",
     "InsightFaceSimilarity": "InsightFace Similarity",

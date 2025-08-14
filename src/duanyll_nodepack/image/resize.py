@@ -25,8 +25,8 @@ class ImagePadToResolution:
     RETURN_TYPES = ("IMAGE", "INT", "INT")
     RETURN_NAMES = ("PADDED_IMAGE", "SCALED_WIDTH", "SCALED_HEIGHT")
     FUNCTION = "pad_and_resize"
-    CATEGORY = "duanyll"
-    NODE_DISPLAY_NAME = "Pad to Resolution"
+    CATEGORY = "duanyll/image"
+    NODE_DISPLAY_NAME = "Pad to Resolution List"
 
     def tensor_to_pil(self, tensor_image):
         """Converts a torch tensor (B, H, W, C) to a list of PIL Images."""
@@ -133,7 +133,7 @@ class ImageCropFromPadded:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("RESTORED_IMAGE",)
     FUNCTION = "crop_and_restore"
-    CATEGORY = "duanyll"
+    CATEGORY = "duanyll/image"
     NODE_DISPLAY_NAME = "Crop from Padded"
 
     def tensor_to_pil(self, tensor_image):

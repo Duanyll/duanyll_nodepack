@@ -60,7 +60,7 @@ class InsightFaceSimilarity:
     RETURN_TYPES = ("FLOAT", "STRING")
     RETURN_NAMES = ("similarity_score", "details")
     FUNCTION = "calculate_similarity"
-    CATEGORY = "duanyll"  # You can change this category name
+    CATEGORY = "duanyll/face"
 
     def calculate_similarity(self, image1: torch.Tensor, image2: torch.Tensor):
         try:

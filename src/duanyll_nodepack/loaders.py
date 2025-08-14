@@ -180,7 +180,7 @@ class HfCheckpointLoader:
 
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
     DESCRIPTION = DESCRIPTION
 
     def load_checkpoint(self, repo_id, subfolder, filename):
@@ -236,7 +236,7 @@ class HfDiffusionModelLoader:
 
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_model"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
     DESCRIPTION = DESCRIPTION
 
     def load_model(self, repo_id, weight_dtype, subfolder, filename):
@@ -296,7 +296,7 @@ class HfVaeLoader:
 
     RETURN_TYPES = ("VAE",)
     FUNCTION = "load_vae"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
     DESCRIPTION = DESCRIPTION
 
     def load_vae(self, repo_id, subfolder, filename):
@@ -338,7 +338,7 @@ class HfClipLoader:
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
 
     DESCRIPTION = DESCRIPTION
 
@@ -411,7 +411,7 @@ class HfLoraLoader:
 
     RETURN_TYPES = ("MODEL", "CLIP")
     FUNCTION = "load_lora"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
     DESCRIPTION = DESCRIPTION
 
     def load_lora(
@@ -465,7 +465,7 @@ class HfLoraLoaderModelOnly:
 
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_lora"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
     DESCRIPTION = DESCRIPTION
 
     def load_lora(self, model, repo_id, strength_model, subfolder, filename):
@@ -528,7 +528,7 @@ class HfDualClipLoader:
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
 
     def load_clip(
         self,
@@ -623,7 +623,7 @@ class HfTripleClipLoader:
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
 
     def load_clip(
         self,
@@ -737,7 +737,7 @@ class HfQuadrupleClipLoader:
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
-    CATEGORY = "duanyll/huggingface"
+    CATEGORY = "duanyll/loaders"
 
     def load_clip(
         self,
