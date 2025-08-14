@@ -5,26 +5,7 @@ import json5
 import jsonpath_ng
 
 
-class AnyType(str):
-    def __ne__(self, __value: object) -> bool:
-        return False
-
-
-class AsAny:
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "any": (AnyType("*"),),
-            }
-        }
-
-    RETURN_TYPES = (AnyType("*"),)
-    FUNCTION = "run"
-    CATEGORY = "duanyll/data"
-
-    def run(self, any):
-        return (any,)
+from .any import AnyType
 
 
 def _extract_last_json_block(text: str) -> str:

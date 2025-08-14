@@ -1,7 +1,7 @@
 from .models.photododdle import PhotoDoddleConditioning
 from .image.difference import ImageDifferenceCmap
 from .models.kontext import FluxKontextTrue3DPE
-from .loaders import (
+from .loaders.hf import (
     HfCheckpointLoader,
     HfDiffusionModelLoader,
     HfClipLoader,
@@ -26,7 +26,9 @@ from .morphology import CoverWordsWithRectangles, AdvancedMorphology
 from .image.resize import ImagePadToResolution, ImageCropFromPadded
 from .face import InsightFaceSimilarity
 from .ark import CreateArkClient, SeedEditNode
-from .data import ParseLlmJsonOutput, JsonPathQuery, JsonPathQuerySingle, JsonPathUpdate
+from .data.any import AsAny
+from .data.json import ParseLlmJsonOutput, JsonPathQuery, JsonPathQuerySingle, JsonPathUpdate
+from .loaders.basic import DownloadImageFromUrl, ReadTextFile
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -59,10 +61,13 @@ NODE_CLASS_MAPPINGS = {
     "InsightFaceSimilarity": InsightFaceSimilarity,
     "CreateArkClient": CreateArkClient,
     "SeedEditNode": SeedEditNode,
+    "AsAny": AsAny,
     "ParseLlmJsonOutput": ParseLlmJsonOutput,
     "JsonPathQuery": JsonPathQuery,
     "JsonPathQuerySingle": JsonPathQuerySingle,
-    "JsonPathUpdate": JsonPathUpdate
+    "JsonPathUpdate": JsonPathUpdate,
+    "DownloadImageFromUrl": DownloadImageFromUrl,
+    "ReadTextFile": ReadTextFile
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -95,8 +100,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "InsightFaceSimilarity": "InsightFace Similarity",
     "CreateArkClient": "Create Ark Client",
     "SeedEditNode": "SeedEdit Node",
+    "AsAny": "As Any",
     "ParseLlmJsonOutput": "Parse LLM JSON Output",
     "JsonPathQuery": "JSON Path Query",
     "JsonPathQuerySingle": "JSON Path Query Single",
-    "JsonPathUpdate": "JSON Path Update"
+    "JsonPathUpdate": "JSON Path Update",
+    "DownloadImageFromUrl": "Download Image from URL",
+    "ReadTextFile": "Read Text File"
 }

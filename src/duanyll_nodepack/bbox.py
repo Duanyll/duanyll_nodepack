@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from .data import AnyType
+from .data.any import AnyType
 
 
 # 字体路径查找逻辑，增强了兼容性
