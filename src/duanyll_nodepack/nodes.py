@@ -26,6 +26,7 @@ from .morphology import CoverWordsWithRectangles, AdvancedMorphology
 from .image.resize import ImagePadToResolution, ImageCropFromPadded
 from .face import InsightFaceSimilarity
 from .ark import CreateArkClient, SeedEditNode
+from .data import ParseLlmJsonOutput, JsonPathQuery, JsonPathQuerySingle, JsonPathUpdate
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -58,6 +59,10 @@ NODE_CLASS_MAPPINGS = {
     "InsightFaceSimilarity": InsightFaceSimilarity,
     "CreateArkClient": CreateArkClient,
     "SeedEditNode": SeedEditNode,
+    "ParseLlmJsonOutput": ParseLlmJsonOutput,
+    "JsonPathQuery": JsonPathQuery,
+    "JsonPathQuerySingle": JsonPathQuerySingle,
+    "JsonPathUpdate": JsonPathUpdate
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -90,4 +95,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "InsightFaceSimilarity": "InsightFace Similarity",
     "CreateArkClient": "Create Ark Client",
     "SeedEditNode": "SeedEdit Node",
+    "ParseLlmJsonOutput": "Parse LLM JSON Output",
+    "JsonPathQuery": "JSON Path Query",
+    "JsonPathQuerySingle": "JSON Path Query Single",
+    "JsonPathUpdate": "JSON Path Update"
 }

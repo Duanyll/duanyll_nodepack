@@ -5,3 +5,5 @@ opencv-python-headless
 kornia
 insightface
 volcengine-python-sdk[ark]
+json5
+jsonpath-ng

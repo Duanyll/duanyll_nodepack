@@ -1,9 +1,10 @@
 import os
-import json
 
 import torch
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+
+from .data import AnyType
 
 
 # 字体路径查找逻辑，增强了兼容性
@@ -45,13 +46,7 @@ class ParseBBoxQwenVL:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "bbox_json": (
-                    "STRING",
-                    {
-                        "multiline": True,
-                        "default": '[{"bbox_2d": [170, 10, 780, 830], "label": "face"}]',
-                    },
-                ),
+                "json_data": (AnyType('*'), )
             }
         }
 
@@ -60,24 +55,20 @@ class ParseBBoxQwenVL:
     FUNCTION = "parse_bbox"
     CATEGORY = "duanyll/bbox"
 
-    def parse_bbox(self, bbox_json):
-        try:
-            bbox_data = json.loads(bbox_json)
-            bboxes = []
-            for bbox in bbox_data:
-                if "bbox_2d" in bbox:
-                    bboxes.append(
-                        BoundingBox(
-                            xmin=bbox["bbox_2d"][0],
-                            ymin=bbox["bbox_2d"][1],
-                            xmax=bbox["bbox_2d"][2],
-                            ymax=bbox["bbox_2d"][3],
-                            label=bbox.get("label", ""),
-                        )
+    def parse_bbox(self, json_data):
+        bboxes = []
+        for bbox in json_data:
+            if "bbox_2d" in bbox:
+                bboxes.append(
+                    BoundingBox(
+                        xmin=bbox["bbox_2d"][0],
+                        ymin=bbox["bbox_2d"][1],
+                        xmax=bbox["bbox_2d"][2],
+                        ymax=bbox["bbox_2d"][3],
+                        label=bbox.get("label", ""),
                     )
-            return (bboxes,)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format: {e}")
+                )
+        return (bboxes,)
 
 
 class DrawBBox:
