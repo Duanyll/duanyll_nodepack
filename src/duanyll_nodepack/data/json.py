@@ -277,12 +277,12 @@ class DumpJson:
                 "json_object": (AnyType("*"),),
             },
             "optional": {
-                "indent": ("INTEGER", {"default": 2, "min": 0, "max": 8}),
-                "max_depth": ("INTEGER", {"default": 0, "min": 0, "max": 8})
+                "indent": ("INT", {"default": 2, "min": 0, "max": 8}),
+                "max_depth": ("INT", {"default": 0, "min": 0, "max": 8})
             }
         }
 
-    RETURN_TYPES = (AnyType("*"),)
+    RETURN_TYPES = ("STRING",)
     FUNCTION = "run"
     CATEGORY = "duanyll/data"
 
