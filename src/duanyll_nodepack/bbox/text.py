@@ -173,9 +173,8 @@ def place_text(
         # 如果所有检查都通过，我们找到了一个有效的位置
         return final_box
 
-    # 如果循环结束仍未找到位置，则放置失败
-    print(f"警告：无法为文本 '{text}' 找到合适的位置。")
-    return None
+    # 仍然要返回一个边界框。
+    return final_box
 
 
 class GetTextBBoxWithAnchor:
@@ -310,6 +309,8 @@ class DrawTextInBBox:
             text_color = (255, 255, 255)
         else:
             text_color = tuple(int(c) for c in text_color)
+        if any('\u4e00' <= char <= '\u9fff' for char in text):
+            font_name = "chinese"
         image_pil = draw_text_with_shadow(
             image=image_pil,
             text=text,
