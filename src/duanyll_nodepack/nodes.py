@@ -12,14 +12,14 @@ from .loaders.hf import (
     HfTripleClipLoader,
     HfQuadrupleClipLoader,
 )
-from .bbox import (
+from .bbox.basic import (
     ParseBBoxQwenVL,
     DrawBBox,
     DrawBBoxMask,
     ExpandBBoxByRatio,
-    BBoxCrop,
-    BBoxImageStitcher,
 )
+from .bbox.image import BBoxCrop, BBoxImageStitcher, FillBBoxWithImage
+from .bbox.text import GetTextBBoxWithAnchor, DrawTextInBBox
 from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .models.fluxtext import FluxTextLoraLoader
 from .morphology import CoverWordsWithRectangles, AdvancedMorphology
@@ -58,6 +58,9 @@ NODE_CLASS_MAPPINGS = {
     "ExpandBBoxByRatio": ExpandBBoxByRatio,
     "BBoxCrop": BBoxCrop,
     "BBoxImageStitcher": BBoxImageStitcher,
+    "FillBBoxWithImage": FillBBoxWithImage,
+    "GetTextBBoxWithAnchor": GetTextBBoxWithAnchor,
+    "DrawTextInBBox": DrawTextInBBox,
     "DrawBoundingBoxesQwen": DrawBoundingBoxesQwen,
     "CreateBoundingBoxesMaskQwen": CreateBoundingBoxesMaskQwen,
     "FluxTextLoraLoader": FluxTextLoraLoader,
@@ -99,6 +102,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ExpandBBoxByRatio": "Expand Bounding Box by Ratio",
     "BBoxCrop": "Bounding Box Crop",
     "BBoxImageStitcher": "Bounding Box Image Stitcher",
+    "FillBBoxWithImage": "Fill Bounding Box with Image",
+    "GetTextBBoxWithAnchor": "Get Text BBox with Anchor",
+    "DrawTextInBBox": "Draw Text in BBox",
     "DrawBoundingBoxesQwen": "[DEPR] Draw Bounding Boxes Qwen",
     "CreateBoundingBoxesMaskQwen": "[DEPR] Create Bounding Boxes Mask Qwen",
     "FluxTextLoraLoader": "Flux Text LoRA Loader",

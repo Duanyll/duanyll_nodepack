@@ -290,5 +290,5 @@ class DumpJson:
         if max_depth > 0:
             json_string = json_dump_with_max_depth(json_object, max_depth=max_depth, indent=indent)
         else:
-            json_string = json.dumps(json_object, indent=2)
+            json_string = json.dumps(json_object, indent=2, ensure_ascii=False)
         return (json_string,)
