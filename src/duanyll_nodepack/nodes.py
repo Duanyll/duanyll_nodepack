@@ -35,7 +35,9 @@ from .data.json import (
     ParseJson5,
     DumpJson,
 )
-from .loaders.basic import DownloadImageFromUrl, ReadTextFile
+from .loaders.basic import ReadTextFile
+from .web.http import HttpPostForJson, DownloadImageFromUrl
+from .web.s3 import CreateS3Client, UploadImageToS3
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -79,7 +81,10 @@ NODE_CLASS_MAPPINGS = {
     "DownloadImageFromUrl": DownloadImageFromUrl,
     "ReadTextFile": ReadTextFile,
     "ParseJson5": ParseJson5,
-    "DumpJson": DumpJson
+    "DumpJson": DumpJson,
+    "HttpPostForJson": HttpPostForJson,
+    "CreateS3Client": CreateS3Client,
+    "UploadImageToS3": UploadImageToS3
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -124,4 +129,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ReadTextFile": "Read Text File",
     "ParseJson5": "Parse JSON5",
     "DumpJson": "Dump JSON",
+    "HttpPostForJson": "HTTP Post for JSON",
+    "CreateS3Client": "Create S3 Client",
+    "UploadImageToS3": "Upload Image to S3"
 }
