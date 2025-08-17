@@ -17,6 +17,8 @@ from .bbox.basic import (
     DrawBBox,
     DrawBBoxMask,
     ExpandBBoxByRatio,
+    MaskToBBox,
+    MergeBBoxes
 )
 from .bbox.image import BBoxCrop, BBoxImageStitcher, FillBBoxWithImage
 from .bbox.text import GetTextBBoxWithAnchor, DrawTextInBBox
@@ -58,6 +60,8 @@ NODE_CLASS_MAPPINGS = {
     "DrawBBox": DrawBBox,
     "DrawBBoxMask": DrawBBoxMask,
     "ExpandBBoxByRatio": ExpandBBoxByRatio,
+    "MaskToBBox": MaskToBBox,
+    "MergeBBoxes": MergeBBoxes,
     "BBoxCrop": BBoxCrop,
     "BBoxImageStitcher": BBoxImageStitcher,
     "FillBBoxWithImage": FillBBoxWithImage,
@@ -105,6 +109,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DrawBBox": "Draw Bounding Boxes",
     "DrawBBoxMask": "Draw Bounding Box Mask",
     "ExpandBBoxByRatio": "Expand Bounding Box by Ratio",
+    "MaskToBBox": "Mask to Bounding Box",
+    "MergeBBoxes": "Merge Bounding Boxes",
     "BBoxCrop": "Bounding Box Crop",
     "BBoxImageStitcher": "Bounding Box Image Stitcher",
     "FillBBoxWithImage": "Fill Bounding Box with Image",

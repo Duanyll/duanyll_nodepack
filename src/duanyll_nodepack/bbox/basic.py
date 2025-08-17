@@ -438,3 +438,53 @@ class MaskToBBox:
         y_max = mask_y.max().item() + 1  # +1 to include
 
         return (BoundingBox(x_min, y_min, x_max, y_max, label=label),)
+
+
+class MergeBBoxes:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "bboxes": ("BBOX", ),
+                "method": (["union", "intersect"], {"default": "union"}),
+            }
+        }
+        
+    RETURN_TYPES = ("BBOX",)
+    FUNCTION = "merge"
+    CATEGORY = "duanyll/bbox"
+    INPUT_IS_LIST = True
+    
+    def merge(self, bboxes, method):
+        method = method[0]
+        
+        if not bboxes:
+            return (BoundingBox(0, 0, 0, 0, label=""),)
+        
+        if method == "union":
+            # Union: find the minimum bbox that covers all input bboxes
+            xmin = min(bbox.xmin for bbox in bboxes)
+            ymin = min(bbox.ymin for bbox in bboxes)
+            xmax = max(bbox.xmax for bbox in bboxes)
+            ymax = max(bbox.ymax for bbox in bboxes)
+            
+            return (BoundingBox(xmin, ymin, xmax, ymax, label="union"),)
+            
+        elif method == "intersect":
+            # Intersection: find the maximum bbox that is covered by all input bboxes
+            xmin = max(bbox.xmin for bbox in bboxes)
+            ymin = max(bbox.ymin for bbox in bboxes)
+            xmax = min(bbox.xmax for bbox in bboxes)
+            ymax = min(bbox.ymax for bbox in bboxes)
+            
+            # Check if intersection is valid (positive area)
+            if xmin >= xmax or ymin >= ymax:
+                # No valid intersection, return zero bbox
+                return (BoundingBox(0, 0, 0, 0, label=""),)
+            
+            return (BoundingBox(xmin, ymin, xmax, ymax, label="intersect"),)
+        
+        else:
+            # Unknown method, return zero bbox
+            return (BoundingBox(0, 0, 0, 0, label=""),)
+
