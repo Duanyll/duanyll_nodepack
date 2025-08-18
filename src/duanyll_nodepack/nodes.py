@@ -26,7 +26,7 @@ from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .models.fluxtext import FluxTextLoraLoader
 from .morphology import CoverWordsWithRectangles, AdvancedMorphology
 from .image.resize import ImagePadToResolution, ImageCropFromPadded
-from .face import InsightFaceSimilarity
+from .metric import InsightFaceSimilarity, LaplacianVariance
 from .ark import CreateArkClient, SeedEditNode
 from .data.any import AsAny
 from .data.json import (
@@ -75,6 +75,7 @@ NODE_CLASS_MAPPINGS = {
     "ImagePadToResolution": ImagePadToResolution,
     "ImageCropFromPadded": ImageCropFromPadded,
     "InsightFaceSimilarity": InsightFaceSimilarity,
+    "LaplacianVariance": LaplacianVariance,
     "CreateArkClient": CreateArkClient,
     "SeedEditNode": SeedEditNode,
     "AsAny": AsAny,
@@ -124,6 +125,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ImagePadToResolution": "Pad to Resolution",
     "ImageCropFromPadded": "Crop from Padded",
     "InsightFaceSimilarity": "InsightFace Similarity",
+    "LaplacianVariance": "Laplacian Variance",
     "CreateArkClient": "Create Ark Client",
     "SeedEditNode": "SeedEdit Node",
     "AsAny": "As Any",

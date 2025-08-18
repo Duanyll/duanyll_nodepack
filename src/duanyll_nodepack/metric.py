@@ -1,4 +1,5 @@
 import os
+import cv2
 import numpy as np
 import torch
 import folder_paths
@@ -60,7 +61,7 @@ class InsightFaceSimilarity:
     RETURN_TYPES = ("FLOAT", "STRING")
     RETURN_NAMES = ("similarity_score", "details")
     FUNCTION = "calculate_similarity"
-    CATEGORY = "duanyll/face"
+    CATEGORY = "duanyll/metric"
 
     def calculate_similarity(self, image1: torch.Tensor, image2: torch.Tensor):
         try:
@@ -105,3 +106,49 @@ class InsightFaceSimilarity:
             error_message = f"Error in Face Similarity node: {str(e)}"
             print(f"\033[91m{error_message}\033[0m") # Print error in red
             return {"ui": {"text": [error_message]}, "result": (0.0, error_message)}
+        
+        
+class LaplacianVariance:
+    """
+    一个计算图像拉普拉斯算子方差的ComfyUI节点。
+    输入：图像 (IMAGE)
+    输出：方差值 (FLOAT)，值越高通常表示图像越清晰。
+    """
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("FLOAT",)
+    RETURN_NAMES = ("laplacian_variance",)
+    FUNCTION = "calculate_variance"
+    CATEGORY = "duanyll/metric"
+
+    def calculate_variance(self, image: torch.Tensor):
+        # 将输入的PyTorch Tensor转换为NumPy数组
+        # Tensor 格式: [batch_size, height, width, channels], 值范围 [0.0, 1.0]
+        # 我们只处理批次中的第一张图片
+        image_np = image[0].cpu().numpy()
+
+        # 将图像从 [0, 1] 的浮点数范围转换为 [0, 255] 的8位整数范围
+        image_np = (image_np * 255).astype(np.uint8)
+
+        # 将RGB图像转换为灰度图，因为模糊度分析在亮度通道上进行即可
+        # ComfyUI 使用 RGB 顺序
+        gray_image = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
+
+        # 计算拉普拉斯算子
+        # cv2.CV_64F 是为了避免信息丢失（因为拉普拉斯算子会产生负值）
+        laplacian = cv2.Laplacian(gray_image, cv2.CV_64F)
+
+        # 计算拉普拉斯结果的方差
+        variance = laplacian.var()
+
+        # 打印结果用于调试
+        print(f"Laplacian Variance: {variance}")
+
+        # 返回一个包含浮点数结果的元组
+        return (float(variance),)
