@@ -40,6 +40,7 @@ from .data.json import (
 from .loaders.basic import ReadTextFile
 from .web.http import HttpPostForJson, DownloadImageFromUrl
 from .web.s3 import CreateS3Client, UploadImageToS3
+from .logic import LogicAnd, LogicOr
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -89,7 +90,9 @@ NODE_CLASS_MAPPINGS = {
     "DumpJson": DumpJson,
     "HttpPostForJson": HttpPostForJson,
     "CreateS3Client": CreateS3Client,
-    "UploadImageToS3": UploadImageToS3
+    "UploadImageToS3": UploadImageToS3,
+    "LogicAnd": LogicAnd,
+    "LogicOr": LogicOr
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -139,5 +142,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DumpJson": "Dump JSON",
     "HttpPostForJson": "HTTP Post for JSON",
     "CreateS3Client": "Create S3 Client",
-    "UploadImageToS3": "Upload Image to S3"
+    "UploadImageToS3": "Upload Image to S3",
+    "LogicAnd": "Logic AND",
+    "LogicOr": "Logic OR"
 }
