@@ -1,4 +1,5 @@
 import os
+from collections import namedtuple
 
 import torch
 import numpy as np
@@ -488,3 +489,58 @@ class MergeBBoxes:
             # Unknown method, return zero bbox
             return (BoundingBox(0, 0, 0, 0, label=""),)
 
+
+SEG = namedtuple("SEG",
+                 ['cropped_image', 'cropped_mask', 'confidence', 'crop_region', 'bbox', 'label', 'control_net_wrapper'],
+                 defaults=[None])
+
+
+class BBoxesToImpactPackSegs:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "bboxes": ("BBOX",),
+                "width": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 64,
+                        "max": 8192,
+                        "step": 8,
+                        "display": "number",
+                    },
+                ),
+                "height": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 64,
+                        "max": 8192,
+                        "step": 8,
+                        "display": "number",
+                    },
+                ),   
+            }
+        }
+        
+    INPUT_IS_LIST = True
+    RETURN_TYPES = ("SEGS",)
+    FUNCTION = "bboxes_to_impactpack_segs"
+    CATEGORY = "duanyll/bbox"
+    
+    def bboxes_to_impactpack_segs(self, bboxes, width, height):
+        width = int(width[0])
+        height = int(height[0])
+        
+        return ((
+            (width, height),
+            [SEG(
+                cropped_image=None,
+                cropped_mask=None,
+                confidence=1.0,
+                crop_region=None,
+                bbox=[i.xmin, i.ymin, i.xmax, i.ymax],
+                label=i.label,
+            ) for i in bboxes]
+        ),)

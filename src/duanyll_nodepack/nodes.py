@@ -18,7 +18,8 @@ from .bbox.basic import (
     DrawBBoxMask,
     ExpandBBoxByRatio,
     MaskToBBox,
-    MergeBBoxes
+    MergeBBoxes,
+    BBoxesToImpactPackSegs
 )
 from .bbox.image import BBoxCrop, BBoxImageStitcher, FillBBoxWithImage
 from .bbox.text import GetTextBBoxWithAnchor, DrawTextInBBox
@@ -64,6 +65,7 @@ NODE_CLASS_MAPPINGS = {
     "MaskToBBox": MaskToBBox,
     "MergeBBoxes": MergeBBoxes,
     "BBoxCrop": BBoxCrop,
+    "BBoxesToImpactPackSegs": BBoxesToImpactPackSegs,
     "BBoxImageStitcher": BBoxImageStitcher,
     "FillBBoxWithImage": FillBBoxWithImage,
     "GetTextBBoxWithAnchor": GetTextBBoxWithAnchor,
@@ -116,6 +118,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MaskToBBox": "Mask to Bounding Box",
     "MergeBBoxes": "Merge Bounding Boxes",
     "BBoxCrop": "Bounding Box Crop",
+    "BBoxesToImpactPackSegs": "BBoxes to ImpactPack Segs",
     "BBoxImageStitcher": "Bounding Box Image Stitcher",
     "FillBBoxWithImage": "Fill Bounding Box with Image",
     "GetTextBBoxWithAnchor": "Get Text BBox with Anchor",
