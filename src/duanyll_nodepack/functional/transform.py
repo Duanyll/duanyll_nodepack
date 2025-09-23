@@ -6,7 +6,7 @@ from collections import deque
 def transform_workflow(workflow: dict) -> tuple[dict, list]:
     """
     根据指定算法变换 ComfyUI 工作流，将由 __FunctionParam__ 和 __FunctionEnd__
-    定义的函数子图转换为一个 __CreateCapture__ 节点。
+    定义的函数子图转换为一个 __CreateClosure__ 节点。
 
     Args:
         workflow: 代表 ComfyUI 工作流的字典对象。
@@ -98,13 +98,12 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
 
         # "__FunctionEnd__" 节点本身始终属于 'param' 部分
         param_nodes.add(end_node_id)
-
         capture_nodes = subgraph_nodes - param_nodes
 
-        # 步骤 4: 将 "__FunctionEnd__" 节点类型更改为 "__CreateCapture__"
+        # 步骤 4: 将 "__FunctionEnd__" 节点类型更改为 "__CreateClosure__"
         create_capture_node = copy.deepcopy(end_node)
-        create_capture_node["class_type"] = "__CreateCapture__"
-        create_capture_node["_meta"]["title"] = "Create Capture"
+        create_capture_node["class_type"] = "__CreateClosure__"
+        create_capture_node["_meta"]["title"] = "Create Closure"
         workflow[end_node_id] = create_capture_node
 
         # 步骤 5: 识别捕获边，并重连接 'param' 子图的副本
@@ -129,7 +128,7 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
 
                         if edge_tuple not in capture_edge_map:
                             capture_edge_map[edge_tuple] = capture_counter
-                            # 为 "__CreateCapture__" 节点添加入边
+                            # 为 "__CreateClosure__" 节点添加入边
                             create_capture_node["inputs"][f"capture_{capture_counter}"] = [
                                 source_id,
                                 source_idx,
@@ -147,7 +146,6 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
 
             param_subgraph_copy[p_node_id] = node_copy
 
-        param_subgraph_copy[f"__end_{end_node_id}"] = end_node
         body_json_string = json.dumps(param_subgraph_copy)
         create_capture_node["inputs"]["body"] = body_json_string
 
@@ -219,7 +217,7 @@ if __name__ == "__main__":
             "class_type": "KSampler",
             "_meta": {"title": "KSampler"},
         },
-        "5": {  # E: __FunctionEnd__ -> __CreateCapture__
+        "5": {  # E: __FunctionEnd__ -> __CreateClosure__
             "inputs": {"return_value": ["4", 0]},
             "class_type": "__FunctionEnd__",
             "_meta": {"title": "Function End"},

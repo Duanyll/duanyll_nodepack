@@ -43,6 +43,11 @@ from .web.http import HttpPostForJson, DownloadImageFromUrl
 from .web.s3 import CreateS3Client, UploadImageToS3
 from .logic import LogicAnd, LogicOr
 
+from .functional.nodes import NODE_CLASS_MAPPINGS as FUNCTIONAL_NODE_CLASS_MAPPINGS
+from .functional.nodes import (
+    NODE_DISPLAY_NAME_MAPPINGS as FUNCTIONAL_NODE_DISPLAY_NAME_MAPPINGS,
+)
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -94,7 +99,9 @@ NODE_CLASS_MAPPINGS = {
     "CreateS3Client": CreateS3Client,
     "UploadImageToS3": UploadImageToS3,
     "LogicAnd": LogicAnd,
-    "LogicOr": LogicOr
+    "LogicOr": LogicOr,
+    
+    **FUNCTIONAL_NODE_CLASS_MAPPINGS,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -147,5 +154,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CreateS3Client": "Create S3 Client",
     "UploadImageToS3": "Upload Image to S3",
     "LogicAnd": "Logic AND",
-    "LogicOr": "Logic OR"
+    "LogicOr": "Logic OR",
+    **FUNCTIONAL_NODE_DISPLAY_NAME_MAPPINGS,
 }
