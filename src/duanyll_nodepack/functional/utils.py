@@ -41,14 +41,14 @@ class ContainsDynamicDict(dict):
 
 
 class Closure:
-    def __init__(self, body, captures):
+    def __init__(self, body, output, captures):
         self.body = body
+        self.output = output
         self.captures = captures
 
     def create_graph(self, params, caller_unique_id=None):
         body = copy.deepcopy(self.body)
         graph = {}
-        output = None
         for node_id, node_data in body.items():
             inputs = node_data["inputs"]
             for key in inputs.keys():
@@ -58,13 +58,18 @@ class Closure:
                         inputs[key] = self.captures[spec[1]]
                     elif spec[0] == "__param":
                         if spec[1] >= len(params):
-                            raise ValueError(f"Parameter index {spec[1]} out of range for provided params.")
+                            raise ValueError(f"Parameter index {spec[1]} out of range for provided {len(params)} params.")
                         inputs[key] = params[spec[1]]
                     else:
                         spec[0] = f"{caller_unique_id}_{spec[0]}"
-            if node_data["class_type"] == "__CreateClosure__":
-                output = inputs["return_value"]
-            else:
-                node_data["override_display_id"] = node_id
-                graph[f"{caller_unique_id}_{node_id}"] = node_data
-        return graph, output
+            node_data["override_display_id"] = node_id
+            graph[f"{caller_unique_id}_{node_id}"] = node_data
+        spec = self.output
+        if spec[0] == "__capture":
+            return graph, self.captures[spec[1]]
+        elif spec[0] == "__param":
+            if spec[1] >= len(params):
+                raise ValueError(f"Parameter index {spec[1]} out of range for provided {len(params)} params.")
+            return graph, params[spec[1]]
+        else:
+            return graph, [f"{caller_unique_id}_{spec[0]}", spec[1]]

@@ -75,6 +75,12 @@ def parse_llm_json_output(llm_output: str) -> dict | list | None:
     """
     # 1. 优先从 markdown 块提取
     potential_json_str = _extract_last_json_block(llm_output)
+    
+    try:
+        # 尝试直接用标准 json 库解析
+        return json.loads(potential_json_str)
+    except json.JSONDecodeError:
+        pass  # 如果失败，继续后续步骤
 
     # 2. 从提取的字符串（或原始字符串）中定位最后一个 JSON 对象
     json_str = _find_last_json_object(potential_json_str)

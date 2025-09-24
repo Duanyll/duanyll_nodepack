@@ -45,6 +45,7 @@ class CreateClosure:
         return {
             "required": {
                 "body": ("STRING", {"multiline": True} ),
+                "output": ("STRING", ),
                 "side_effects": ("FLOAT", )
             },
             "optional": ContainsDynamicDict(
@@ -58,13 +59,14 @@ class CreateClosure:
     FUNCTION = "run"
     CATEGORY = "duanyll/functional/internal"
 
-    def run(self, body, side_effects, **kwargs):
+    def run(self, body, output, side_effects, **kwargs):
         # kwargs: capture_0, capture_1, ...
         captures = []
         for i in range(len(kwargs)):
             captures.append(kwargs[f"capture_{i}"])
         body = json.loads(body)
-        return (Closure(body, captures), )
+        output = json.loads(output)
+        return (Closure(body, output, captures), )
 
 class CallClosure:
     @classmethod
@@ -95,6 +97,8 @@ class CallClosure:
         for i in range(len(kwargs)):
             params.append(kwargs[f"param_{i}"])
         graph, output = closure.create_graph(params, caller_unique_id=unique_id)
+        if len(graph) == 0:
+            return (output, )
         return {
             "result": (output, ),
             "expand": graph
@@ -119,19 +123,25 @@ class IntermidiateCoroutine:
     CATEGORY = "duanyll/functional/internal"
     
     def run(self, return_value, coroutine, unique_id):
-        try:
-            (closure, params) = coroutine.send(return_value)
-        except StopIteration as e:
-            return (e.value, )
-        
         (base_id, index) = unique_id.rsplit("_", 1)
-        index = int(index) + 1
-        next_node_id = f"{base_id}_{index}"
+        graph = {}
         
-        if index > COROUTINE_LIMIT:
-            raise RecursionError("Coroutine recursion limit exceeded. Possible infinite recursion detected.")
-        
-        graph, output = closure.create_graph(params, caller_unique_id=unique_id)
+        while len(graph) == 0:
+            try:
+                (closure, params) = coroutine.send(return_value)
+            except StopIteration as e:
+                return (e.value, )
+            
+            index = int(index) + 1
+            next_node_id = f"{base_id}_{index}"
+            
+            if index > COROUTINE_LIMIT:
+                raise RecursionError("Coroutine recursion limit exceeded. Possible infinite recursion detected.")
+            
+            graph, output = closure.create_graph(params, caller_unique_id=unique_id)
+            
+            if len(graph) == 0:
+                return_value = output
         
         return {
             "result": ([next_node_id, 0], ),
