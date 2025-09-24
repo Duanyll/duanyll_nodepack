@@ -102,15 +102,19 @@ class Sleep:
     
     
 NODE_CLASS_MAPPINGS = {
-    "Sow": Sow,
-    "Reap": Reap,
+    "__Sow__": Sow,
+    "__Reap__": Reap,
     "Latch": Latch,
     "Sleep": Sleep,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "Sow": "Sow",
-    "Reap": "Reap",
+    "__Sow__": "Sow",
+    "__Reap__": "Reap",
     "Latch": "Latch",
     "Sleep": "Sleep",
 }
+
+SIDE_EFFECT_NODES = [
+    "__Sow__", "__Reap__"
+]

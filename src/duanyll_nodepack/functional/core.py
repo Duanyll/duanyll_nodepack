@@ -45,6 +45,7 @@ class CreateClosure:
         return {
             "required": {
                 "body": ("STRING", {"multiline": True} ),
+                "side_effects": ("FLOAT", )
             },
             "optional": ContainsDynamicDict(
                 {
@@ -57,7 +58,7 @@ class CreateClosure:
     FUNCTION = "run"
     CATEGORY = "duanyll/functional/internal"
 
-    def run(self, body, **kwargs):
+    def run(self, body, side_effects, **kwargs):
         # kwargs: capture_0, capture_1, ...
         captures = []
         for i in range(len(kwargs)):

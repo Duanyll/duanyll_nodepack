@@ -2,6 +2,8 @@ import json
 import copy
 from collections import deque
 
+from .side_effects import SIDE_EFFECT_NODES
+
 
 def transform_workflow(workflow: dict) -> tuple[dict, list]:
     """
@@ -107,7 +109,7 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
         workflow[end_node_id] = create_capture_node
 
         # 步骤 5: 识别捕获边，并重连接 'param' 子图的副本
-
+        has_side_effects = False
         param_subgraph_copy = {}
         # 映射 (source_id, source_idx) -> "capture_N"，以避免重复捕获
         capture_edge_map = {}
@@ -117,6 +119,8 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
             original_node_data = workflow[p_node_id]
             if original_node_data.get("class_type") == "__FunctionParam__":
                 continue
+            if original_node_data.get("class_type") in SIDE_EFFECT_NODES:
+                has_side_effects = True
             # 创建深拷贝以在 'body' 中进行修改
             node_copy = copy.deepcopy(original_node_data)
 
@@ -148,6 +152,10 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
 
         body_json_string = json.dumps(param_subgraph_copy)
         create_capture_node["inputs"]["body"] = body_json_string
+        if has_side_effects:
+            create_capture_node["inputs"]["side_effects"] = float("NaN")
+        else:
+            create_capture_node["inputs"]["side_effects"] = 0.0
 
         # 移除原有的 "return_value" 输入
         if "return_value" in create_capture_node["inputs"]:

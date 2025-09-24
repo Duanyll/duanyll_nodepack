@@ -65,5 +65,6 @@ class Closure:
             if node_data["class_type"] == "__CreateClosure__":
                 output = inputs["return_value"]
             else:
+                node_data["override_display_id"] = node_id
                 graph[f"{caller_unique_id}_{node_id}"] = node_data
         return graph, output
