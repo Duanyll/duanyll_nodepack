@@ -93,7 +93,6 @@ class CallClosure:
         params = []
         for i in range(len(kwargs)):
             params.append(kwargs[f"param_{i}"])
-        print(f"[FUNCTIONAL] Calling closure {closure} with params: {params}")
         graph, output = closure.create_graph(params, caller_unique_id=unique_id)
         return {
             "result": (output, ),
@@ -186,14 +185,14 @@ NODE_CLASS_MAPPINGS = {
     "__FunctionParam__": FunctionParam,
     "__FunctionEnd__": FunctionEnd,
     "__CreateClosure__": CreateClosure,
-    "CallClosure": CallClosure,
     "__IntermidiateCoroutine__": IntermidiateCoroutine,
+    "CallClosure": CallClosure,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "__FunctionParam__": "Function Parameter",
     "__FunctionEnd__": "Function End",
     "__CreateClosure__": "Create Closure",
-    "CallClosure": "Call Closure",
     "__IntermidiateCoroutine__": "Intermidiate Coroutine",
+    "CallClosure": "Call Closure",
 }

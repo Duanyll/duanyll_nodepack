@@ -107,6 +107,9 @@ class NestWhile(CoroutineNodeBase):
                 "x": (AnyType("*"), ),
                 "predicate": ("CLOSURE",),
                 "max_depth": ("INT", {"default": 10, "min": 1, "max": 100}),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID"
             }
         }
         

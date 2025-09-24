@@ -48,6 +48,8 @@ from .functional.nodes import (
     NODE_DISPLAY_NAME_MAPPINGS as FUNCTIONAL_NODE_DISPLAY_NAME_MAPPINGS,
 )
 
+PREFIX = "duanyll::"
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -155,5 +157,17 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "UploadImageToS3": "Upload Image to S3",
     "LogicAnd": "Logic AND",
     "LogicOr": "Logic OR",
+    
     **FUNCTIONAL_NODE_DISPLAY_NAME_MAPPINGS,
 }
+
+# Prefix all node keys with the specified prefix, expect for keys beginning with "__"
+if PREFIX:
+    NODE_CLASS_MAPPINGS = {
+        (k if k.startswith("__") else PREFIX + k): v
+        for k, v in NODE_CLASS_MAPPINGS.items()
+    }
+    NODE_DISPLAY_NAME_MAPPINGS = {
+        (k if k.startswith("__") else PREFIX + k): v
+        for k, v in NODE_DISPLAY_NAME_MAPPINGS.items()
+    }
