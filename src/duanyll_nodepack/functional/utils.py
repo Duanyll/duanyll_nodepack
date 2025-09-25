@@ -49,27 +49,57 @@ class Closure:
     def create_graph(self, params, caller_unique_id=None):
         body = copy.deepcopy(self.body)
         graph = {}
+
+        def add_recover_node(spec):
+            prefix = f"{caller_unique_id}_" if caller_unique_id is not None else ""
+            recover_id = f"{prefix}{spec[0]}_{spec[1]}"
+            if recover_id in graph:
+                return [recover_id, 0]
+            value = self.captures[spec[1]] if spec[0] == "__capture" else params[spec[1]]
+            graph[recover_id] = {
+                "inputs": {
+                    # Wrap the list in a tuple so it's treated as a literal, not a link
+                    "values": (value,),
+                },
+                "class_type": "__RecoverList__",
+            }
+            return [recover_id, 0]
+        
         for node_id, node_data in body.items():
             inputs = node_data["inputs"]
             for key in inputs.keys():
                 spec = inputs[key]
                 if isinstance(spec, list):
                     if spec[0] == "__capture":
-                        inputs[key] = self.captures[spec[1]]
+                        value = self.captures[spec[1]]
+                        if isinstance(value, list):
+                            inputs[key] = add_recover_node(spec)
+                        else:
+                            inputs[key] = value
                     elif spec[0] == "__param":
                         if spec[1] >= len(params):
                             raise ValueError(f"Parameter index {spec[1]} out of range for provided {len(params)} params.")
-                        inputs[key] = params[spec[1]]
+                        value = params[spec[1]]
+                        if isinstance(value, list):
+                            inputs[key] = add_recover_node(spec)
+                        else:
+                            inputs[key] = value
                     else:
                         spec[0] = f"{caller_unique_id}_{spec[0]}"
             node_data["override_display_id"] = node_id
             graph[f"{caller_unique_id}_{node_id}"] = node_data
         spec = self.output
         if spec[0] == "__capture":
-            return graph, self.captures[spec[1]]
+            value = self.captures[spec[1]]
+            if isinstance(value, list):
+                return graph, add_recover_node(spec)
+            return graph, value
         elif spec[0] == "__param":
             if spec[1] >= len(params):
                 raise ValueError(f"Parameter index {spec[1]} out of range for provided {len(params)} params.")
-            return graph, params[spec[1]]
+            value = params[spec[1]]
+            if isinstance(value, list):
+                return graph, add_recover_node(spec)
+            return graph, value
         else:
             return graph, [f"{caller_unique_id}_{spec[0]}", spec[1]]

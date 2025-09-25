@@ -190,13 +190,31 @@ class CoroutineNodeBase:
                 }
             }
         }
-    
+        
+
+class RecoverList:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "values": (AnyType("*"), ),
+            },
+        }
+
+    RETURN_TYPES = (AnyType("*"), )
+    FUNCTION = "run"
+    CATEGORY = "duanyll/functional/internal"
+
+    def run(self, values):
+        return values
+
 
 NODE_CLASS_MAPPINGS = {
     "__FunctionParam__": FunctionParam,
     "__FunctionEnd__": FunctionEnd,
     "__CreateClosure__": CreateClosure,
     "__IntermidiateCoroutine__": IntermidiateCoroutine,
+    "__RecoverList__": RecoverList,
     "CallClosure": CallClosure,
 }
 
@@ -205,5 +223,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "__FunctionEnd__": "Function End",
     "__CreateClosure__": "Create Closure",
     "__IntermidiateCoroutine__": "Intermidiate Coroutine",
-    "CallClosure": "Call Closure",
+    "__RecoverList__": "Recover List",
+    "CallClosure": "Call Function",
 }
