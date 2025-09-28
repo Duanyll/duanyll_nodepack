@@ -22,6 +22,7 @@ const NODE_COLORS = {
 
     "__Sow__": "side_effect",
     "__Reap__": "side_effect",
+    "__Inspect__": "side_effect",
     "duanyll::Latch": "side_effect",
     "duanyll::Sleep": "side_effect",
 };

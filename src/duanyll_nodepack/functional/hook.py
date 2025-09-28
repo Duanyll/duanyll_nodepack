@@ -7,7 +7,7 @@ def hook_comfyui_execution():
         original_execute = PromptExecutor.execute
         def hooked_execute(self, prompt, prompt_id, extra_data={}, execute_outputs=[]):
             reset_reap_storage()
-            prompt, warnings = transform_workflow(prompt)
+            prompt, warnings = transform_workflow(prompt, execute_outputs)
             if warnings:
                 print("[FUNCTIONAL] Warnings during transformation:")
                 for warning in warnings:

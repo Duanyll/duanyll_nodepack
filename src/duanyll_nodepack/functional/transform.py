@@ -5,6 +5,7 @@ from typing import Dict, List, Set, Tuple
 
 
 from .side_effects import SIDE_EFFECT_NODES
+# SIDE_EFFECT_NODES = {}
 
 
 class WorkflowGraph:
@@ -106,12 +107,10 @@ def _find_param_nodes(
 def _transform_single_function(end_node_id: str, workflow: Dict, graph: WorkflowGraph):
     """转换单个 __FunctionEnd__ 节点及其关联的子图。"""
     subgraph_nodes = _find_function_subgraph(end_node_id, graph)
-    
-    # 临时将 __FunctionEnd__ 节点标记为 __CreateClosure__ 以便分区
-    original_end_node = copy.deepcopy(workflow[end_node_id])
+    original_end_node = workflow[end_node_id]
     
     param_nodes = _find_param_nodes(subgraph_nodes, workflow, graph)
-    param_nodes.add(end_node_id)  # 确保 __FunctionEnd__ 节点包含在 param_nodes 中
+    param_nodes.add(end_node_id)
     capture_nodes = subgraph_nodes - param_nodes
 
     # 恢复原始节点类型以便深拷贝
@@ -149,7 +148,6 @@ def _transform_single_function(end_node_id: str, workflow: Dict, graph: Workflow
 
                 if edge_tuple not in capture_edge_map:
                     capture_edge_map[edge_tuple] = capture_counter
-                    # 为闭包节点添加捕获输入，并更新图结构
                     closure_node["inputs"][f"capture_{capture_counter}"] = [source_id, source_idx]
                     graph.add_edge(source_id, end_node_id)
                     capture_counter += 1
@@ -170,7 +168,6 @@ def _transform_single_function(end_node_id: str, workflow: Dict, graph: Workflow
     closure_node["inputs"]["body"] = json.dumps(param_subgraph_copy)
     closure_node["inputs"]["side_effects"] = float("NaN") if has_side_effects else 0.0
 
-    # 移除 "return_value" 输入并更新图
     if "return_value" in closure_node["inputs"]:
         return_link = closure_node["inputs"]["return_value"]
         if isinstance(return_link, list) and len(return_link) == 2:
@@ -178,8 +175,7 @@ def _transform_single_function(end_node_id: str, workflow: Dict, graph: Workflow
             graph.remove_edge(source_id, end_node_id)
         del closure_node["inputs"]["return_value"]
 
-
-def _prune_unreachable_nodes(workflow: Dict, graph: WorkflowGraph, leaf_nodes: Set[str]) -> Dict:
+def _prune_unreachable_nodes(workflow: Dict, leaf_nodes: Set[str]) -> Dict:
     """从叶子节点回溯，移除所有不可达的节点。"""
     reachable_nodes = set()
     q = deque(list(leaf_nodes))
@@ -188,8 +184,6 @@ def _prune_unreachable_nodes(workflow: Dict, graph: WorkflowGraph, leaf_nodes: S
         curr_id = q.popleft()
         reachable_nodes.add(curr_id)
 
-        # 注意：这里我们必须遍历 workflow dict，因为 graph.rev_adj 已经改变
-        # 我们需要从最终状态的叶子节点，基于最终的连接关系进行回溯
         node_data = workflow.get(curr_id)
         if node_data:
             for input_value in node_data.get("inputs", {}).values():
@@ -205,11 +199,83 @@ def _prune_unreachable_nodes(workflow: Dict, graph: WorkflowGraph, leaf_nodes: S
         if node_id in reachable_nodes
     }
 
-
-def transform_workflow(workflow: dict) -> tuple[dict, list]:
+def _preprocess_inspect_nodes(workflow: Dict, execute_outputs: list[str]):
     """
-    根据指定算法变换 ComfyUI 工作流，将由 __FunctionParam__ 和 __FunctionEnd__
-    定义的函数子图转换为一个 __CreateClosure__ 节点。
+    预处理 __Inspect__ 节点。
+    查找所有仅由 __Inspect__ 节点连接的叶子节点，将其"吸收"到 __Inspect__ 节点的 body 中，
+    然后将 __Inspect__ 节点转换为 __InspectImpl__ 节点。
+    此函数会直接在传入的 workflow 字典上进行修改。
+    """
+    temp_graph = WorkflowGraph(workflow)
+    leaf_nodes = temp_graph.get_leaf_nodes()
+    
+    nodes_to_remove = set()
+    modified_inspect_nodes: Dict[str, Dict] = {}
+
+    for leaf_id in leaf_nodes:
+        parents = temp_graph.rev_adj.get(leaf_id, [])
+        # 条件：叶子节点，且只有一个父节点，且父节点类型为 __Inspect__
+        if len(parents) == 1:
+            parent_id = parents[0]
+            parent_node = workflow.get(parent_id)
+            
+            if not (parent_node and parent_node.get("class_type") == "__Inspect__"):
+                continue
+
+            # 新增检查：确认叶子节点连接的是 __Inspect__ 的 value 输出（索引 1）
+            is_connected_to_value_output = False
+            leaf_node = workflow[leaf_id]
+            for input_link in leaf_node.get("inputs", {}).values():
+                if (isinstance(input_link, list) and 
+                        str(input_link[0]) == parent_id and 
+                        input_link[1] == 1):
+                    is_connected_to_value_output = True
+                    break
+            
+            # 如果不是连接到 value 输出，则跳过此叶子节点
+            if not is_connected_to_value_output:
+                continue
+
+            # --- 确认无误后，开始转换逻辑 ---
+            if parent_id not in modified_inspect_nodes:
+                modified_inspect_nodes[parent_id] = {}
+            
+            body = modified_inspect_nodes[parent_id]
+            leaf_node_copy = copy.deepcopy(leaf_node)
+            
+            # 查找并替换来自父节点的输入边
+            for input_name, input_link in leaf_node_copy.get("inputs", {}).items():
+                if (isinstance(input_link, list) and 
+                        str(input_link[0]) == parent_id and 
+                        input_link[1] == 1):
+                    leaf_node_copy["inputs"][input_name] = ["__value", 0]
+                    break
+            
+            body[leaf_id] = leaf_node_copy
+            nodes_to_remove.add(leaf_id)
+
+
+    # 将更改应用到工作流
+    # 1. 更新被修改的 __Inspect__ 节点
+    for inspect_id, body_dict in modified_inspect_nodes.items():
+        inspect_node = workflow[inspect_id]
+        inspect_node["class_type"] = "__InspectImpl__"
+        inspect_node["inputs"]["body"] = json.dumps(body_dict)
+
+    # 2. 移除被吸收的叶子节点
+    for node_id in nodes_to_remove:
+        if node_id in workflow:
+            del workflow[node_id]
+        # Remove from execute_outputs if present
+        if node_id in execute_outputs:
+            execute_outputs.remove(node_id)
+            
+
+def transform_workflow(workflow: dict, execute_outputs: list[str]) -> tuple[dict, list]:
+    """
+    根据指定算法变换 ComfyUI 工作流。
+    此算法首先预处理 __Inspect__ 节点以支持动态输出，然后将由 
+    __FunctionParam__ 和 __FunctionEnd__ 定义的函数子图转换为一个 __CreateClosure__ 节点。
 
     Args:
         workflow: 代表 ComfyUI 工作流的字典对象。
@@ -222,26 +288,29 @@ def transform_workflow(workflow: dict) -> tuple[dict, list]:
     warnings = []
     workflow_og = workflow
     workflow = copy.deepcopy(workflow_og)
-
-    # 步骤 1: 构建图并进行初始拓扑排序
+    
+    # 步骤 2: 预处理 __Inspect__ 节点
+    _preprocess_inspect_nodes(workflow, execute_outputs)
+    
+    # 步骤 3: 从可能已修改的工作流重建图结构以进行后续操作
     graph = WorkflowGraph(workflow)
     sorted_nodes, is_valid_dag = graph.topological_sort()
-    
     if not is_valid_dag:
         warnings.append("Warning: The workflow contains cycles and cannot be fully sorted topologically.")
         return workflow_og, warnings
     
-    initial_leaf_nodes = graph.get_leaf_nodes()
+    # 在函数变换之前，确定最终用于剪枝的叶子节点集合
+    leaf_nodes_for_pruning = graph.get_leaf_nodes()
 
-    # 步骤 2-6: 按拓扑顺序迭代，转换所有函数定义
+    # 步骤 4: 按拓扑顺序迭代，转换所有函数定义
     for node_id in sorted_nodes:
         if workflow[node_id].get("class_type") == "__FunctionEnd__":
             _transform_single_function(node_id, workflow, graph)
 
-    # 步骤 7: 剪枝，删除不再被任何叶子节点依赖的节点
-    pruned_workflow = _prune_unreachable_nodes(workflow, graph, initial_leaf_nodes)
+    # 步骤 5: 剪枝，删除不再被任何叶子节点依赖的节点
+    pruned_workflow = _prune_unreachable_nodes(workflow, leaf_nodes_for_pruning)
 
-    # 步骤 8: 最终检查，确保图中不包含 "__FunctionParam__" 节点
+    # 步骤 6: 最终检查，确保图中不包含 __FunctionParam__ 节点
     for node_id, node_data in pruned_workflow.items():
         if node_data.get("class_type") == "__FunctionParam__":
             warnings.append(
