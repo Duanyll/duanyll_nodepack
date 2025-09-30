@@ -149,3 +149,13 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LogicAnd": "Logic AND",
     "LogicOr": "Logic OR"
 }
+
+PREFIX = "duanyll::"
+NODE_CLASS_MAPPINGS = {
+    (k if k.startswith("__") else PREFIX + k): v
+    for k, v in NODE_CLASS_MAPPINGS.items()
+}
+NODE_DISPLAY_NAME_MAPPINGS = {
+    (k if k.startswith("__") else PREFIX + k): v
+    for k, v in NODE_DISPLAY_NAME_MAPPINGS.items()
+}
