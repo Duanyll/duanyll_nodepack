@@ -76,6 +76,12 @@ def parse_llm_json_output(llm_output: str) -> dict | list | None:
     # 1. 优先从 markdown 块提取
     potential_json_str = _extract_last_json_block(llm_output)
 
+    try:
+        # 尝试直接用标准 json 库解析
+        return json5.loads(potential_json_str)
+    except json.JSONDecodeError:
+        pass  # 如果失败，继续后续步骤
+
     # 2. 从提取的字符串（或原始字符串）中定位最后一个 JSON 对象
     json_str = _find_last_json_object(potential_json_str)
 
@@ -148,8 +154,8 @@ class JsonPathQuery:
             if raise_errors:
                 raise
         return (result,)
-    
-    
+
+
 class JsonPathQuerySingle:
     @classmethod
     def INPUT_TYPES(cls):
@@ -199,8 +205,8 @@ class JsonPathUpdate:
         data_copy = copy.deepcopy(json_data)
         expr.update(data_copy, value)
         return (data_copy,)
-    
-    
+
+
 class ParseJson5:
     @classmethod
     def INPUT_TYPES(cls):
@@ -217,7 +223,7 @@ class ParseJson5:
     def run(self, json_string):
         obj = json5.loads(json_string)
         return (obj,)
-    
+
 
 def json_dump_with_max_depth(obj, max_depth=3, indent=4):
     """
@@ -267,8 +273,8 @@ def json_dump_with_max_depth(obj, max_depth=3, indent=4):
             return f"[\n" + ",\n".join(items) + f"\n{current_indent}]"
 
     return format_recursive(obj, 0)
-    
-    
+
+
 class DumpJson:
     @classmethod
     def INPUT_TYPES(cls):
