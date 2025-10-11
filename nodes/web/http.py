@@ -5,36 +5,6 @@ from PIL import Image
 import numpy as np
 
 from ..data.any import AnyType
-
-
-class HttpPostForJson:
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "url": ("STRING", ),
-                "body": (AnyType("*"),),
-                "content_type": (["application/json", "multipart/form-data"],)
-            },
-            "optional": {
-                "token": ("STRING", ),
-                "headers": (AnyType("*"),),
-                "timeout": ("INT", { "default": 600 })
-            }
-        }
-        
-    RETURN_TYPES = (AnyType("*"),)
-    FUNCTION = "run"
-    CATEGORY = "duanyll/web"
-
-    def run(self, url, body, token=None, headers=None, timeout=600):
-        if token is not None:
-            if headers is None:
-                headers = {}
-            headers["Authorization"] = f"Bearer {token}"
-        response = requests.post(url, json=body, headers=headers, timeout=timeout)
-        response.raise_for_status()
-        return (response.json(), )
     
 
 def url_to_tensor(image_url: str) -> torch.Tensor:

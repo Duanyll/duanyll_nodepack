@@ -39,7 +39,7 @@ from .data.json import (
     DumpJson,
 )
 from .loaders.basic import ReadTextFile
-from .web.http import HttpPostForJson, DownloadImageFromUrl
+from .web.http import DownloadImageFromUrl
 from .web.s3 import CreateS3Client, UploadImageToS3
 from .logic import LogicAnd, LogicOr
 
@@ -90,7 +90,6 @@ NODE_CLASS_MAPPINGS = {
     "ReadTextFile": ReadTextFile,
     "ParseJson5": ParseJson5,
     "DumpJson": DumpJson,
-    "HttpPostForJson": HttpPostForJson,
     "CreateS3Client": CreateS3Client,
     "UploadImageToS3": UploadImageToS3,
     "LogicAnd": LogicAnd,
@@ -143,7 +142,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ReadTextFile": "Read Text File",
     "ParseJson5": "Parse JSON5",
     "DumpJson": "Dump JSON",
-    "HttpPostForJson": "HTTP Post for JSON",
     "CreateS3Client": "Create S3 Client",
     "UploadImageToS3": "Upload Image to S3",
     "LogicAnd": "Logic AND",
