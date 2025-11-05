@@ -115,7 +115,7 @@ class ParseLlmJsonOutput:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "llm_output": ("STRING", {"multiline": True, "default": ""}),
+                "llm_output": ("STRING", {"default": ""}),
             }
         }
 

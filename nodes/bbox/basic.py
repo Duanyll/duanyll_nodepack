@@ -11,7 +11,7 @@ from ..data.any import AnyType
 # 字体路径查找逻辑，增强了兼容性
 try:
     # 优先使用脚本相对路径
-    FONT_PATH = os.path.join(os.path.dirname(__file__), "../../../assets/hei.TTF")
+    FONT_PATH = os.path.join(os.path.dirname(__file__), "../../assets/hei.TTF")
     if not os.path.exists(FONT_PATH):
         # 如果不存在，尝试一个常见的Linux系统路径
         FONT_PATH = "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
@@ -64,7 +64,12 @@ class ParseBBoxQwenVL:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "json_data": (AnyType('*'), )
+                "json_data": (AnyType('*'), ),
+                "format": (["qwen25_vl", "qwen3_vl"], {"default": "qwen25_vl"}),
+            },
+            "optional": {
+                "width": ("INT", {"default": 640, "display": "number"}),
+                "height": ("INT", {"default": 480, "display": "number"}),
             }
         }
 
@@ -73,7 +78,7 @@ class ParseBBoxQwenVL:
     FUNCTION = "parse_bbox"
     CATEGORY = "duanyll/bbox"
 
-    def parse_bbox(self, json_data):
+    def parse_bbox(self, json_data, format, width = 1000, height = 1000):
         bboxes = []
         for bbox in json_data:
             if "bbox_2d" in bbox:
@@ -86,6 +91,13 @@ class ParseBBoxQwenVL:
                         label=bbox.get("label", ""),
                     )
                 )
+        if format == "qwen3_vl":
+            # Qwen3-VL uses normalized coordinates between 0 and 1000
+            for bbox in bboxes:
+                bbox.xmin = int(bbox.xmin / 1000 * width)
+                bbox.ymin = int(bbox.ymin / 1000 * height)
+                bbox.xmax = int(bbox.xmax / 1000 * width)
+                bbox.ymax = int(bbox.ymax / 1000 * height)
         return (bboxes,)
 
 

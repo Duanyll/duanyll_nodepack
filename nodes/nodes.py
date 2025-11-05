@@ -42,6 +42,8 @@ from .loaders.basic import ReadTextFile
 from .web.http import DownloadImageFromUrl
 from .web.s3 import CreateS3Client, UploadImageToS3
 from .logic import LogicAnd, LogicOr
+from .models.diffusers_repl import DiffusersRandomNoise, DiffusersFluxScheduler, QwenImageClipEnforceBfloat16
+from .llm import LlmCreateClient, LlmClientSetSeed, LlmCreateChat, LlmChatAddMessage, LlmChatCompletion
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -93,7 +95,15 @@ NODE_CLASS_MAPPINGS = {
     "CreateS3Client": CreateS3Client,
     "UploadImageToS3": UploadImageToS3,
     "LogicAnd": LogicAnd,
-    "LogicOr": LogicOr
+    "LogicOr": LogicOr,
+    "DiffusersRandomNoise": DiffusersRandomNoise,
+    "DiffusersFluxScheduler": DiffusersFluxScheduler,
+    "QwenImageClipEnforceBfloat16": QwenImageClipEnforceBfloat16,
+    "LlmCreateClient": LlmCreateClient,
+    "LlmClientSetSeed": LlmClientSetSeed,
+    "LlmCreateChat": LlmCreateChat,
+    "LlmChatAddMessage": LlmChatAddMessage,
+    "LlmChatCompletion": LlmChatCompletion,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -145,7 +155,15 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CreateS3Client": "Create S3 Client",
     "UploadImageToS3": "Upload Image to S3",
     "LogicAnd": "Logic AND",
-    "LogicOr": "Logic OR"
+    "LogicOr": "Logic OR",
+    "DiffusersRandomNoise": "Diffusers Random Noise",
+    "DiffusersFluxScheduler": "Diffusers Flux Scheduler",
+    "QwenImageClipEnforceBfloat16": "Qwen-Image Clip Enforce Bfloat16",
+    "LlmCreateClient": "LLM Create Client",
+    "LlmClientSetSeed": "LLM Client Set Seed",
+    "LlmCreateChat": "LLM Create Chat",
+    "LlmChatAddMessage": "LLM Chat Add Message",
+    "LlmChatCompletion": "LLM Chat Completion",
 }
 
 PREFIX = "duanyll::"

@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from .basic import BoundingBox
 from ..data.any import AnyType
 
-FONT_ROOT = os.path.join(os.path.dirname(__file__), "../../../assets/")
+FONT_ROOT = os.path.join(os.path.dirname(__file__), "../../assets/")
 
 FONT_MAP = {
     "default": os.path.join(FONT_ROOT, "arial.ttf"),
