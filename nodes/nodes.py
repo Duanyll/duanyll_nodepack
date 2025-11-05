@@ -38,10 +38,10 @@ from .data.json import (
     ParseJson5,
     DumpJson,
 )
+from .data.text import TextContainsChinese, StringFormat
 from .loaders.basic import ReadTextFile
 from .web.http import DownloadImageFromUrl
 from .web.s3 import CreateS3Client, UploadImageToS3
-from .logic import LogicAnd, LogicOr
 from .models.diffusers_repl import DiffusersRandomNoise, DiffusersFluxScheduler, QwenImageClipEnforceBfloat16
 from .llm import LlmCreateClient, LlmClientSetSeed, LlmCreateChat, LlmChatAddMessage, LlmChatCompletion
 
@@ -94,8 +94,6 @@ NODE_CLASS_MAPPINGS = {
     "DumpJson": DumpJson,
     "CreateS3Client": CreateS3Client,
     "UploadImageToS3": UploadImageToS3,
-    "LogicAnd": LogicAnd,
-    "LogicOr": LogicOr,
     "DiffusersRandomNoise": DiffusersRandomNoise,
     "DiffusersFluxScheduler": DiffusersFluxScheduler,
     "QwenImageClipEnforceBfloat16": QwenImageClipEnforceBfloat16,
@@ -104,6 +102,8 @@ NODE_CLASS_MAPPINGS = {
     "LlmCreateChat": LlmCreateChat,
     "LlmChatAddMessage": LlmChatAddMessage,
     "LlmChatCompletion": LlmChatCompletion,
+    "TextContainsChinese": TextContainsChinese,
+    "StringFormat": StringFormat,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -154,8 +154,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DumpJson": "Dump JSON",
     "CreateS3Client": "Create S3 Client",
     "UploadImageToS3": "Upload Image to S3",
-    "LogicAnd": "Logic AND",
-    "LogicOr": "Logic OR",
     "DiffusersRandomNoise": "Diffusers Random Noise",
     "DiffusersFluxScheduler": "Diffusers Flux Scheduler",
     "QwenImageClipEnforceBfloat16": "Qwen-Image Clip Enforce Bfloat16",
@@ -164,6 +162,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LlmCreateChat": "LLM Create Chat",
     "LlmChatAddMessage": "LLM Chat Add Message",
     "LlmChatCompletion": "LLM Chat Completion",
+    "TextContainsChinese": "Text Contains Chinese",
+    "StringFormat": "String Format",
 }
 
 PREFIX = "duanyll::"
