@@ -43,6 +43,7 @@ from .web.http import DownloadImageFromUrl
 from .web.s3 import CreateS3Client, UploadImageToS3
 from .models.diffusers_repl import DiffusersRandomNoise, DiffusersFluxScheduler, QwenImageClipEnforceBfloat16
 from .llm import LlmCreateClient, LlmClientSetSeed, LlmCreateChat, LlmChatAddMessage, LlmChatCompletion
+from .models.hunyuan import VllmHunyuanImage3Node
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -100,6 +101,7 @@ NODE_CLASS_MAPPINGS = {
     "LlmChatCompletion": LlmChatCompletion,
     "TextContainsChinese": TextContainsChinese,
     "StringFormat": StringFormat,
+    "VllmHunyuanImage3Node": VllmHunyuanImage3Node,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -157,6 +159,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LlmChatCompletion": "LLM Chat Completion",
     "TextContainsChinese": "Text Contains Chinese",
     "StringFormat": "String Format",
+    "VllmHunyuanImage3Node": "vLLM HunyuanImage3",
 }
 
 PREFIX = "duanyll::"
