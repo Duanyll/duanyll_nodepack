@@ -23,12 +23,11 @@ from .bbox.basic import (
 )
 from .bbox.image import BBoxCrop, BBoxImageStitcher, FillBBoxWithImage
 from .bbox.text import GetTextBBoxWithAnchor, DrawTextInBBox
-from .qwen import DrawBoundingBoxesQwen, CreateBoundingBoxesMaskQwen
 from .models.fluxtext import FluxTextLoraLoader
-from .morphology import CoverWordsWithRectangles, AdvancedMorphology
+from .morphology import CoverWordsWithRectangles
 from .image.resize import ImagePadToResolution, ImageCropFromPadded
 from .metric import InsightFaceSimilarity, LaplacianVariance
-from .ark import CreateArkClient, SeedEditNode
+from .models.ark import CreateArkClient, SeedEditNode
 from .data.any import AsAny
 from .data.json import (
     ParseLlmJsonOutput,
@@ -72,11 +71,8 @@ NODE_CLASS_MAPPINGS = {
     "FillBBoxWithImage": FillBBoxWithImage,
     "GetTextBBoxWithAnchor": GetTextBBoxWithAnchor,
     "DrawTextInBBox": DrawTextInBBox,
-    "DrawBoundingBoxesQwen": DrawBoundingBoxesQwen,
-    "CreateBoundingBoxesMaskQwen": CreateBoundingBoxesMaskQwen,
     "FluxTextLoraLoader": FluxTextLoraLoader,
     "CoverWordsWithRectangles": CoverWordsWithRectangles,
-    "AdvancedMorphology": AdvancedMorphology,
     "ImagePadToResolution": ImagePadToResolution,
     "ImageCropFromPadded": ImageCropFromPadded,
     "InsightFaceSimilarity": InsightFaceSimilarity,
@@ -132,11 +128,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FillBBoxWithImage": "Fill Bounding Box with Image",
     "GetTextBBoxWithAnchor": "Get Text BBox with Anchor",
     "DrawTextInBBox": "Draw Text in BBox",
-    "DrawBoundingBoxesQwen": "[DEPR] Draw Bounding Boxes Qwen",
-    "CreateBoundingBoxesMaskQwen": "[DEPR] Create Bounding Boxes Mask Qwen",
     "FluxTextLoraLoader": "Flux Text LoRA Loader",
     "CoverWordsWithRectangles": "Cover Words with Rectangles",
-    "AdvancedMorphology": "[DEPR] Advanced Morphology",
     "ImagePadToResolution": "Pad to Resolution",
     "ImageCropFromPadded": "Crop from Padded",
     "InsightFaceSimilarity": "InsightFace Similarity",
