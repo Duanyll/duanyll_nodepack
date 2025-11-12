@@ -3,6 +3,10 @@ import math
 import numbers
 from typing import List, Union
 from comfy.sd1_clip import SDClipModel
+from comfy.text_encoders import qwen_vl
+from comfy.text_encoders.qwen_vl import VisionRotaryEmbedding
+from comfy.text_encoders.llama import Qwen25_7BVLI
+
 
 class Noise_DiffusersRandomNoise:
     def __init__(self, seed, device="cuda:0", dtype="bfloat16"):
@@ -14,35 +18,46 @@ class Noise_DiffusersRandomNoise:
         latent_image = input_latent["samples"]
         b, c, _, h, w = latent_image.shape
         generator = torch.Generator(device=self.device).manual_seed(self.seed)
-        noise = torch.randn((b, c, h, w), 
-                            generator=generator, 
-                            device=self.device, 
-                            dtype=getattr(torch, self.dtype))
+        noise = torch.randn(
+            (b, c, h, w),
+            generator=generator,
+            device=self.device,
+            dtype=getattr(torch, self.dtype),
+        )
         return noise.view_as(latent_image)
-    
+
 
 class DiffusersRandomNoise:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "noise_seed": ("INT", {
-                    "default": 0,
-                    "min": 0,
-                    "max": 0xffffffffffffffff,
-                    "control_after_generate": True,
-                }),
-                "device": ("STRING", {
-                    "default": "cuda:0",
-                    "multiline": False,
-                }),
-                "dtype": ("STRING", {
-                    "default": "bfloat16",
-                    "multiline": False,
-                }),
+                "noise_seed": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "min": 0,
+                        "max": 0xFFFFFFFFFFFFFFFF,
+                        "control_after_generate": True,
+                    },
+                ),
+                "device": (
+                    "STRING",
+                    {
+                        "default": "cuda:0",
+                        "multiline": False,
+                    },
+                ),
+                "dtype": (
+                    "STRING",
+                    {
+                        "default": "bfloat16",
+                        "multiline": False,
+                    },
+                ),
             }
         }
-    
+
     RETURN_TYPES = ("NOISE",)
     FUNCTION = "get_noise"
     CATEGORY = "duanyll/models/diffusers"
@@ -54,14 +69,15 @@ class DiffusersRandomNoise:
             dtype=dtype,
         )
         return (noise_generator,)
-    
 
 
-def calculate_mu(image_seq_len: int,
-                 base_seq_len: int = 256,
-                 max_seq_len: int = 8192,
-                 base_shift: float = 0.5,
-                 max_shift: float = 0.9) -> float:
+def calculate_mu(
+    image_seq_len: int,
+    base_seq_len: int = 256,
+    max_seq_len: int = 8192,
+    base_shift: float = 0.5,
+    max_shift: float = 0.9,
+) -> float:
     """
     计算 mu（仍然是标量，因为它只依赖于序列长度）。
     """
@@ -81,8 +97,7 @@ def stretch_to_terminal(t: torch.Tensor, shift_terminal: float = 0.02) -> torch.
     return stretched_t
 
 
-def get_shifted_timesteps(num_inference_steps: int,
-                          image_seq_len: int) -> torch.Tensor:
+def get_shifted_timesteps(num_inference_steps: int, image_seq_len: int) -> torch.Tensor:
     """
     返回形状为 (num_inference_steps,) 的 torch.Tensor。
     """
@@ -99,10 +114,12 @@ def get_shifted_timesteps(num_inference_steps: int,
 
     # 4. 拉伸到终端
     sigmas = stretch_to_terminal(sigmas)
-    
+
     # Append 0.0 at the end
-    sigmas = torch.cat([sigmas, torch.tensor([0.0], device=sigmas.device, dtype=sigmas.dtype)], dim=0)
-    
+    sigmas = torch.cat(
+        [sigmas, torch.tensor([0.0], device=sigmas.device, dtype=sigmas.dtype)], dim=0
+    )
+
     return sigmas
 
 
@@ -111,28 +128,34 @@ class DiffusersFluxScheduler:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "num_inference_steps": ("INT", {
-                    "default": 50,
-                    "min": 1,
-                    "max": 1000,
-                }),
-                "image_seq_len": ("INT", {
-                    "default": 256,
-                    "min": 16,
-                    "max": 8192,
-                }),
+                "num_inference_steps": (
+                    "INT",
+                    {
+                        "default": 50,
+                        "min": 1,
+                        "max": 1000,
+                    },
+                ),
+                "image_seq_len": (
+                    "INT",
+                    {
+                        "default": 256,
+                        "min": 16,
+                        "max": 8192,
+                    },
+                ),
             }
         }
-        
+
     RETURN_TYPES = ("SIGMAS",)
     FUNCTION = "get_sigmas"
     CATEGORY = "duanyll/models/diffusers"
-    
+
     def get_sigmas(self, num_inference_steps: int, image_seq_len: int):
         sigmas = get_shifted_timesteps(num_inference_steps, image_seq_len)
         return (sigmas,)
-    
-    
+
+
 def patched_sdclipmodel_process_tokens(self, tokens, device):
     end_token = self.special_tokens.get("end", None)
     if end_token is None:
@@ -167,7 +190,9 @@ def patched_sdclipmodel_process_tokens(self, tokens, device):
             index += 1
 
         tokens_embed = torch.tensor([tokens_temp], device=device, dtype=torch.long)
-        tokens_embed = self.transformer.get_input_embeddings()(tokens_embed, out_dtype=torch.bfloat16)
+        tokens_embed = self.transformer.get_input_embeddings()(
+            tokens_embed, out_dtype=torch.bfloat16
+        )
         index = 0
         pad_extra = 0
         embeds_info = []
@@ -194,16 +219,29 @@ def patched_sdclipmodel_process_tokens(self, tokens, device):
             emb = emb.view(1, -1, emb.shape[-1]).to(device=device, dtype=torch.bfloat16)
             emb_shape = emb.shape[1]
             if emb.shape[-1] == tokens_embed.shape[-1]:
-                tokens_embed = torch.cat([tokens_embed[:, :ind], emb, tokens_embed[:, ind:]], dim=1)
-                attention_mask = attention_mask[:ind] + [1] * emb_shape + attention_mask[ind:]
+                tokens_embed = torch.cat(
+                    [tokens_embed[:, :ind], emb, tokens_embed[:, ind:]], dim=1
+                )
+                attention_mask = (
+                    attention_mask[:ind] + [1] * emb_shape + attention_mask[ind:]
+                )
                 index += emb_shape - 1
-                embeds_info.append({"type": emb_type, "index": ind, "size": emb_shape, "extra": extra})
+                embeds_info.append(
+                    {"type": emb_type, "index": ind, "size": emb_shape, "extra": extra}
+                )
             else:
                 index += -1
                 pad_extra += emb_shape
 
         if pad_extra > 0:
-            padd_embed = self.transformer.get_input_embeddings()(torch.tensor([[self.special_tokens["pad"]] * pad_extra], device=device, dtype=torch.long), out_dtype=torch.bfloat16)
+            padd_embed = self.transformer.get_input_embeddings()(
+                torch.tensor(
+                    [[self.special_tokens["pad"]] * pad_extra],
+                    device=device,
+                    dtype=torch.long,
+                ),
+                out_dtype=torch.bfloat16,
+            )
             tokens_embed = torch.cat([tokens_embed, padd_embed], dim=1)
             attention_mask = attention_mask + [0] * pad_extra
 
@@ -211,12 +249,19 @@ def patched_sdclipmodel_process_tokens(self, tokens, device):
         attention_masks.append(attention_mask)
         num_tokens.append(sum(attention_mask))
 
-    return torch.cat(embeds_out), torch.tensor(attention_masks, device=device, dtype=torch.long), num_tokens, embeds_info
+    return (
+        torch.cat(embeds_out),
+        torch.tensor(attention_masks, device=device, dtype=torch.long),
+        num_tokens,
+        embeds_info,
+    )
 
 
 def patched_sdclipmodel_forward(self, tokens):
     device = self.transformer.get_input_embeddings().weight.device
-    embeds, attention_mask, num_tokens, embeds_info = self.process_tokens(tokens, device)
+    embeds, attention_mask, num_tokens, embeds_info = self.process_tokens(
+        tokens, device
+    )
 
     attention_mask_model = None
     if self.enable_attention_masks:
@@ -227,7 +272,16 @@ def patched_sdclipmodel_forward(self, tokens):
     else:
         intermediate_output = self.layer_idx
 
-    outputs = self.transformer(None, attention_mask_model, embeds=embeds, num_tokens=num_tokens, intermediate_output=intermediate_output, final_layer_norm_intermediate=self.layer_norm_hidden_state, dtype=torch.bfloat16, embeds_info=embeds_info)
+    outputs = self.transformer(
+        None,
+        attention_mask_model,
+        embeds=embeds,
+        num_tokens=num_tokens,
+        intermediate_output=intermediate_output,
+        final_layer_norm_intermediate=self.layer_norm_hidden_state,
+        dtype=torch.bfloat16,
+        embeds_info=embeds_info,
+    )
 
     if self.layer == "last":
         z = outputs[0].float()
@@ -239,7 +293,11 @@ def patched_sdclipmodel_forward(self, tokens):
 
     pooled_output = None
     if len(outputs) >= 3:
-        if not self.return_projected_pooled and len(outputs) >= 4 and outputs[3] is not None:
+        if (
+            not self.return_projected_pooled
+            and len(outputs) >= 4
+            and outputs[3] is not None
+        ):
             pooled_output = outputs[3].float()
         elif outputs[2] is not None:
             pooled_output = outputs[2].float()
@@ -254,6 +312,33 @@ def patched_sdclipmodel_forward(self, tokens):
     return z, pooled_output
 
 
+def patched_qwen25_7bvli_preprocess_embed(self, embed, device):
+    if embed["type"] == "image":
+        image, grid = qwen_vl.process_qwen2vl_images(embed["data"])
+        return self.visual(image.to(device, dtype=torch.bfloat16), grid), grid
+    return None, None
+
+
+def patched_vision_rotary_embedding_forward(self, seqlen: int, device):
+    inv_freq = 1.0 / (self.theta ** (torch.arange(0, self.dim, 2, dtype=torch.float, device=device) / self.dim))
+    seq = torch.arange(seqlen, device=inv_freq.device, dtype=inv_freq.dtype)
+    freqs = torch.outer(seq, inv_freq)
+    return freqs.to(torch.bfloat16)
+
+
+def rotate_half(x):
+    x1 = x[..., : x.shape[-1] // 2]
+    x2 = x[..., x.shape[-1] // 2 :]
+    return torch.cat((-x2, x1), dim=-1)
+
+
+def patched_apply_rotary_pos_emb_vision(q, k, cos, sin):
+    cos, sin = cos.unsqueeze(-2), sin.unsqueeze(-2)
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+    k_embed = (k * cos) + (rotate_half(k) * sin)
+    return q_embed, k_embed
+
+
 class QwenImageClipEnforceBfloat16:
     @classmethod
     def INPUT_TYPES(cls):
@@ -262,13 +347,31 @@ class QwenImageClipEnforceBfloat16:
                 "clip": ("CLIP", {}),
             }
         }
-        
+
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "patch_clip"
     CATEGORY = "duanyll/models/diffusers"
-    
+
     def patch_clip(self, clip):
         # patch clip.cond_stage_model
-        clip.cond_stage_model.qwen25_7b.process_tokens = patched_sdclipmodel_process_tokens.__get__(clip.cond_stage_model.qwen25_7b, SDClipModel)
-        clip.cond_stage_model.qwen25_7b.forward = patched_sdclipmodel_forward.__get__(clip.cond_stage_model.qwen25_7b, SDClipModel)
+        clip.cond_stage_model.qwen25_7b.process_tokens = (
+            patched_sdclipmodel_process_tokens.__get__(
+                clip.cond_stage_model.qwen25_7b, SDClipModel
+            )
+        )
+        clip.cond_stage_model.qwen25_7b.forward = patched_sdclipmodel_forward.__get__(
+            clip.cond_stage_model.qwen25_7b, SDClipModel
+        )
+        clip.cond_stage_model.qwen25_7b.transformer.preprocess_embed = (
+            patched_qwen25_7bvli_preprocess_embed.__get__(
+                clip.cond_stage_model.qwen25_7b.transformer, Qwen25_7BVLI
+            )
+        )
+        clip.cond_stage_model.qwen25_7b.transformer.visual.rotary_pos_emb.forward = (
+            patched_vision_rotary_embedding_forward.__get__(
+                clip.cond_stage_model.qwen25_7b.transformer.visual.rotary_pos_emb,
+                VisionRotaryEmbedding,
+            )
+        )
+        qwen_vl.apply_rotary_pos_emb_vision = patched_apply_rotary_pos_emb_vision
         return (clip,)

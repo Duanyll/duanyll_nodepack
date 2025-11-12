@@ -1,5 +1,5 @@
 from .models.photododdle import PhotoDoddleConditioning
-from .image.difference import ImageDifferenceCmap
+from .image.ops import ImageDifferenceCmap, ImageLinstretch, MaskLinstretch
 from .models.kontext import FluxKontextTrue3DPE
 from .loaders.hf import (
     HfCheckpointLoader,
@@ -44,6 +44,7 @@ from .web.s3 import CreateS3Client, UploadImageToS3
 from .models.diffusers_repl import DiffusersRandomNoise, DiffusersFluxScheduler, QwenImageClipEnforceBfloat16
 from .llm import LlmCreateClient, LlmClientSetSeed, LlmCreateChat, LlmChatAddMessage, LlmChatCompletion
 from .models.hunyuan import VllmHunyuanImage3Node
+from .models.experimental import ChannelIncrementalConstrainedCFGGuiderNode
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -102,6 +103,9 @@ NODE_CLASS_MAPPINGS = {
     "TextContainsChinese": TextContainsChinese,
     "StringFormat": StringFormat,
     "VllmHunyuanImage3Node": VllmHunyuanImage3Node,
+    "ChannelIncrementalConstrainedCFGGuiderNode": ChannelIncrementalConstrainedCFGGuiderNode,
+    "ImageLinstretch": ImageLinstretch,
+    "MaskLinstretch": MaskLinstretch,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -160,6 +164,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TextContainsChinese": "Text Contains Chinese",
     "StringFormat": "String Format",
     "VllmHunyuanImage3Node": "vLLM HunyuanImage3",
+    "ChannelIncrementalConstrainedCFGGuiderNode": "Channel Incremental Constrained CFG Guider",
+    "ImageLinstretch": "Image Linear Stretch",
+    "MaskLinstretch": "Mask Linear Stretch",
 }
 
 PREFIX = "duanyll::"

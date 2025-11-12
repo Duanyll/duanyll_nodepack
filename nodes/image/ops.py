@@ -92,3 +92,96 @@ class ImageDifferenceCmap:
 
         # The final shape should be (Batch, Height, Width, Channels)
         return (output_tensor,)
+    
+    
+class ImageLinstretch:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "tol_low": ("FLOAT", {"default": 0.01, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "tol_high": ("FLOAT", {"default": 0.99, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "clip": ("BOOLEAN", {"default": True}),
+                "mode": (["per_image", "per_channel"], {"default": "per_image"}),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = "duanyll/image"
+    DESCRIPTION = "Apply linear stretch to the input image to enhance contrast."
+
+    def process(self, image: torch.Tensor, tol_low: float, tol_high: float, clip: bool, mode: str):
+        """
+        Applies linear stretch to the input image.
+
+        Args:
+            image (torch.Tensor): The input image tensor (Batch, Height, Width, Channels).
+
+        Returns:
+            A tuple containing the linstretched image tensor.
+        """
+        if mode == "per_image":
+            # Compute global min and max across all channels
+            min_val = torch.quantile(image, tol_low)
+            max_val = torch.quantile(image, tol_high)
+        elif mode == "per_channel":
+            # Compute min and max per channel
+            min_val = torch.quantile(image, tol_low, dim=(1, 2), keepdim=True)
+            max_val = torch.quantile(image, tol_high, dim=(1, 2), keepdim=True)
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
+        
+        # Apply linear stretch
+        scale = max_val - min_val
+        scale[scale < 1e-6] = 1.0  # Prevent division by zero
+
+        linstretched_image = (image - min_val) / scale
+        if clip:
+            linstretched_image = torch.clamp(linstretched_image, 0.0, 1.0)
+
+        return (linstretched_image,)
+    
+    
+class MaskLinstretch:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "mask": ("MASK",),
+                "tol_low": ("FLOAT", {"default": 0.01, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "tol_high": ("FLOAT", {"default": 0.99, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "clip": ("BOOLEAN", {"default": True}),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "process"
+    CATEGORY = "duanyll/image"
+    DESCRIPTION = "Apply linear stretch to the input mask to enhance contrast."
+
+    def process(self, mask: torch.Tensor, tol_low: float, tol_high: float, clip: bool):
+        """
+        Applies linear stretch to the input mask.
+
+        Args:
+            mask (torch.Tensor): The input mask tensor (Batch, Height, Width).
+
+        Returns:
+            A tuple containing the linstretched mask tensor.
+        """
+        # Compute global min and max
+        min_val = torch.quantile(mask, tol_low)
+        max_val = torch.quantile(mask, tol_high)
+
+        # Apply linear stretch
+        scale = max_val - min_val
+        if scale < 1e-6:
+            scale = 1.0  # Prevent division by zero
+
+        linstretched_mask = (mask - min_val) / scale
+        if clip:
+            linstretched_mask = torch.clamp(linstretched_mask, 0.0, 1.0)
+
+        return (linstretched_mask,)
